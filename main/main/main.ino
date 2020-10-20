@@ -1,18 +1,38 @@
 //jotted down some ideas. we'll decide what kinds of arguments to pass to the functions soon
 
-void resetBar() {
+/************GLOBAL VARIABLES**********************/
+//declare any variables here that need to be remembered throughout the entire game
+
+/************END OF GLOBAL VARIABLES**********************/
+void waitToStartGame() {
+  //wiat and do nothing until someone presses "start"
+  //then continue with game loop
+}
+
+void resetBar(int barPosLeft, int barPosRight) {
   //reset the bar
   //put the ball back onto the bar
   
 }
 
-void updateScore() {
-  //change value of score
-  //change the score display
+void resetBall() {
+  //wait until ball is ready to roll onto the bar
+  //put the ball back onto the bar
+}
+
+void checkForUserInput(distSensorVal) {
+
+//put your code here
+
+
+//possible output:
+//tell left motor to go up, down, or don't move, by X amount
+//right motor to go up, down, or don't move, by Y amount
 }
 
 void moveBar() {
-  //get user input
+  //get user input, ie "move left side down by X amount"
+  
   //control motors to move bar
 //Need to check position of bar:
 //If bar is too tilted, don't move it
@@ -27,13 +47,23 @@ void ballEntry() {
 
 //If ball falls into target hole
 //  Increment and display score
-//  Bring bar to bottom of game
-//  Put ball back onto bar
 //  increment the score
 //  Start the next level
 //  Choose a new target hole
   updateScore();
   resetBar();
+}
+
+void updateScore(int newScore) {
+  //change value of score
+  //change the score display
+}
+
+void updateTarget(int prevTarget) {
+  //change the new target hole based on the last one
+  //decide if we want pre-specified "levels"
+  //turn off any lights on the old target hole
+  //make the new target hole light up
 }
 
 void setup() {
@@ -49,8 +79,20 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  waitToStartGame();
+  resetBar();
+  resetBall();
+  updateScore(0);
+  updateTarget(target # 1);
+  
+  while(ball still alive) {
+    checkForUserInput();
+    moveBar();
+    ballEntry();
+  }
 
-  moveBar();
-  ballEntry();
-
+  resetBar();
+  updateScore();
+  updateHighScore();
+  turnOffAllLights();
 }

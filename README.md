@@ -1,4 +1,3 @@
 # Spark2020-2021
-Ice Cold Beer (name subject to change)
-
-:zap:
+~~Ice Cold Beer~~ 
+Jerry's Quest :mouse: :cheese:
