@@ -9,6 +9,11 @@ void waitToStartGame() {
   //then continue with game loop
 }
 
+void checkIfGameOver () {
+//check if user "won" or "lost"
+//if user hasn't moved for a while, we assume they walked away and end the game
+}
+
 void resetBar(int barPosLeft, int barPosRight) {
   //reset the bar
   //put the ball back onto the bar
@@ -50,6 +55,12 @@ void ballEntry() {
 //  increment the score
 //  Start the next level
 //  Choose a new target hole
+  
+  //TODO for next week:
+  //choose an input sensor (IR vs ultrasonic distance vs reed switch vs limit switch)
+  //based on sensor, write code to determine if ball got close enough === fell into that hole
+  //need 1 sensor for bottom of gameboard: if ball got to bottom of the gameboard, and didn't trigger a target hole, it went into a bad hole
+  
   updateScore();
   resetBar();
 }
@@ -89,6 +100,7 @@ void loop() {
     checkForUserInput();
     moveBar();
     ballEntry();
+    checkIfGameOver();
   }
 
   resetBar();
