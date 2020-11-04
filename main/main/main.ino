@@ -2,10 +2,10 @@
 
 /**********CONSTANTS*****************************/
 
-#define SCORE_INCR = 10;
-#define ECHO_PIN = 9;
-#define TRIG_PIN = 10;
-#define NUM_TARGET_HOLES = 8;
+const int scoreIncrease = 10;
+const int echoPin = 9;
+const int trigPin = 10;
+const int numTargetHoles = 8;
 
 /************END OF CONSTANTS*********************/
 
@@ -17,34 +17,39 @@ long duration;
 // distance between sensor and object
 int distance;
 
+bool playingGame = true; //true if someone is playing, false if game is idle
+
 int score = 0;
 
-int targetHoles[NUM_TARGET_HOLES];
+int targetHoles[numTargetHoles];
 
 /************END OF GLOBAL VARIABLES**********************/
 void waitToStartGame() {
   //wiat and do nothing until someone presses "start"
   //then continue with game loop
+  Serial.println("wait to start the game. pretend someone starts playing game");
 }
 
 void checkIfGameOver () {
 //check if user "won" or "lost"
 //if user hasn't moved for a while, we assume they walked away and end the game
+Serial.println("check if game over");
 }
 
-void resetBar(int barPosLeft, int barPosRight) {
-  //reset the bar
+void resetBar() {
+  //given current position of bar, reset the bar
   //put the ball back onto the bar
-  
+  Serial.println("reset bar");
 }
 
 void resetBall() {
   //wait until ball is ready to roll onto the bar
   //put the ball back onto the bar
+  Serial.println("reset ball");
 }
 
 /******USER INPUT FUNCTIONS ****/
-int smooth_distance () {
+int smooth_distance (int num_samples) {
   int value = 0;
   int current_distance = 0;
   for (int i = 0; i < num_samples; i++) {
@@ -61,6 +66,7 @@ int smooth_distance () {
     }
     
   }
+  
   return (value/num_samples);
 }
 
@@ -113,31 +119,26 @@ void ballEntry() {
 //  increment the score
 //  Start the next level
 //  Choose a new target hole
-<<<<<<< HEAD
   
   //TODO for next week:
   //choose an input sensor (IR vs ultrasonic distance vs reed switch vs limit switch)
   //based on sensor, write code to determine if ball got close enough === fell into that hole
   //need 1 sensor for bottom of gameboard: if ball got to bottom of the gameboard, and didn't trigger a target hole, it went into a bad hole
   
-  updateScore();
-=======
+  int fellIntoTargetHole = true; //TODO: change to false
+  int fellIntoBadHole = false;
+  
 
   if(fellIntoTargetHole) {
-    updateScore(SCORE_INCR);
+    score += 1;
     //choose a new hole
   } else if (fellIntoBadHole) {
     
   }
   
->>>>>>> Merge user input code, increment score, init pins
   resetBar();
 }
 
-//change value of score
-void updateScore(int newScore) {
-  score += newScore;
-}
 
 void updateTarget(int prevTarget) {
   //change the new target hole based on the last one
@@ -150,14 +151,14 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600); // Starts the serial communication
   
-  for(int i = 0; i < NUM_TARGET_HOLES; i++) {
+  for(int i = 0; i < numTargetHoles; i++) {
     pinMode(i, INPUT); //IR receivers, one pin per target hole
   }
   
   pinMode(8, OUTPUT);
 
-  pinMode(ECHO_PIN, INPUT); //echoPin, for distance sensor
-  pinMode(TRIG_PIN, OUTPUT); //trigggerPin, for distance sensor
+  pinMode(echoPin, INPUT); //echoPin, for distance sensor
+  pinMode(trigPin, OUTPUT); //trigggerPin, for distance sensor
   
   pinMode(11, OUTPUT); //IR LEDs. keep on at all times
   pinMode(12, OUTPUT); 
@@ -175,22 +176,30 @@ void loop() {
   waitToStartGame();
   resetBar();
   resetBall();
-  updateScore(0);
-  updateTarget(target # 1);
+  score = 0;
   
-  while(ball still alive) {
+  //updateTarget(); //choose 1st target
+
+  //dummy counter for mimicking a game loop
+  int dummyCounter = 0;
+  
+  while(playingGame) {
     //user input: just for testing purposes
-    distance = smooth_distance(20);
-    Serial.print("Distance: ");
-    Serial.println(distance);
+    //distance = smooth_distance(20);
+    //Serial.print("Distance: ");
+    //Serial.println(distance);
   
     moveBar();
     ballEntry();
     checkIfGameOver();
+
+    if(dummyCounter > 10) {
+      playingGame = false;
+    }
+      dummyCounter++;
   }
 
   resetBar();
-  updateScore();
-  updateHighScore();
-  turnOffAllLights();
+  //updateHighScore();
+  //turnOffAllLights();
 }
