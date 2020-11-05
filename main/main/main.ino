@@ -18,7 +18,7 @@ long duration;
 // distance between sensor and object
 int distance;
 
-bool playingGame = true; //true if someone is playing, false if game is idle
+bool playingGame = true; //true if someone is playing, false if game is idle or person lost 
 
 int score = 0;
 int targetPin = 0;
@@ -53,6 +53,16 @@ void resetBall() {
   //wait until ball is ready to roll onto the bar
   //put the ball back onto the bar
   Serial.println("reset ball");
+}
+
+void resetGame(){
+    resetBar();
+    resetBall();
+    score = 0;
+    updateScore(millis());
+
+    //TODO: Need a way to see when a new game has started and set the startTime
+    //TO CONSIDER: we may want to add in a pushbutton that starts the game 
 }
 
 /****** USER INPUT FUNCTIONS ****/
@@ -187,11 +197,10 @@ void ballEntry() {
 
     //TODO: choose a new hole
     
-  } else if (bottomBroken) { //ball fell in bad hole
-    //TODO: decide how many "lives" a player can have
-    resetBar();
-    resetBall();
-    ///updateScore();
+  } else if (bottomBroken) { //ball fell in bad hole  
+    playingGame = false;
+    resetGame();
+
   }
 
   resetBar();
