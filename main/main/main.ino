@@ -26,7 +26,11 @@ int targetPin = 0;
 bool targetBroken = false;
 bool bottomBroken = false;
 
+//global variables for timing 
+unsigned long startTime;  //time when the new hole is assigned 
+
 int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
+
 
 /************END OF GLOBAL VARIABLES**********************/
 
@@ -181,17 +185,19 @@ void ballEntry() {
   int fellIntoBadHole = false;
 
   if (targetBroken) { //ball fell in good hole
-    score += SCOREINCREASE;
     resetBar();
     resetBall();
+
     //updateHighScore();
     updateTarget();
+
+    updateScore(millis());
     
   } else if (bottomBroken) { //ball fell in bad hole
     //TODO: decide how many "lives" a player can have
     resetBar();
     resetBall();
-    ///updateHighScore();
+    ///updateScore();
   }
 
   resetBar();
@@ -202,6 +208,8 @@ void updateTarget(int prevTarget) {
   //decide if we want pre-specified "levels"
   //turn off any lights on the old target hole
   //make the new target hole light up
+
+  startTime = millis();
 }
 
 /************ END OF BALL DETECTION FUNCTIONS ***********/
@@ -209,6 +217,12 @@ void updateTarget(int prevTarget) {
 /************ START OF OUTPUT FUNCTIONS ***********/
 void updateLights(int lastHole, int newHole){
 
+}
+
+void updateScore(unsigned long finishTime){
+    unsigned long completionTime = finishTime-startTime; 
+    score += 12 - (int)(completionTime*10)%12; 
+    
 }
 
 /************ END OF OUTPUT FUNCTIONS ***********/
@@ -260,6 +274,7 @@ void loop() {
     //Serial.print("Distance: ");
     //Serial.println(distance);
 
+    startTime = millis(); //might not need here depending on when updateTarget is called. 
     moveBar();
     ballEntry();
     checkIfGameOver();
@@ -274,6 +289,6 @@ void loop() {
   }
 
   resetBar();
-  //updateHighScore();
+  //updateScore();
   //turnOffAllLights();
 }
