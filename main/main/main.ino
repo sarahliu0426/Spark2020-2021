@@ -18,8 +18,12 @@ long duration;
 // distance between sensor and object
 int distance;
 
+<<<<<<< HEAD
 bool playingGame = true; //true if someone is playing, false if game is idle
 bool wonGame = false;
+=======
+bool playingGame = true; //true if someone is playing, false if game is idle or person lost 
+>>>>>>> d33d2cf1f0520a6c41bdfebaebfde940ae6f242d
 
 int score = 0;
 int targetPin = 0;
@@ -29,8 +33,12 @@ bool bottomBroken = false;
 //global variables for timing 
 unsigned long startTime;  //time when the new hole is assigned 
 
+<<<<<<< HEAD
 int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
 
+=======
+int targetHoles[NUMTARGETS]; //ensure that this array is storing pin numbers 
+>>>>>>> d33d2cf1f0520a6c41bdfebaebfde940ae6f242d
 
 /************END OF GLOBAL VARIABLES**********************/
 
@@ -73,6 +81,16 @@ void resetBall() {
   //wait until ball is ready to roll onto the bar
   //put the ball back onto the bar
   Serial.println("reset ball");
+}
+
+void resetGame(){
+    resetBar();
+    resetBall();
+    score = 0;
+    updateScore(millis());
+
+    //TODO: Need a way to see when a new game has started and set the startTime
+    //TO CONSIDER: we may want to add in a pushbutton that starts the game 
 }
 
 /****** USER INPUT FUNCTIONS ****/
@@ -193,11 +211,10 @@ void ballEntry() {
 
     updateScore(millis());
     
-  } else if (bottomBroken) { //ball fell in bad hole
-    //TODO: decide how many "lives" a player can have
-    resetBar();
-    resetBall();
-    ///updateScore();
+  } else if (bottomBroken) { //ball fell in bad hole  
+    playingGame = false;
+    resetGame();
+
   }
 
   resetBar();
@@ -216,7 +233,8 @@ void updateTarget(int prevTarget) {
 
 /************ START OF OUTPUT FUNCTIONS ***********/
 void updateLights(int lastHole, int newHole){
-
+  digitalWrite(lastHole, LOW)
+  digitalWrite(newHole, HIGH)
 }
 
 void updateScore(unsigned long finishTime){
