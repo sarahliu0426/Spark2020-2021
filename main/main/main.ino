@@ -28,7 +28,7 @@ bool bottomBroken = false;
 //global variables for timing 
 unsigned long startTime;  //time when the new hole is assigned 
 
-int targetHoles[NUMTARGETS];
+int targetHoles[NUMTARGETS]; //ensure that this array is storing pin numbers 
 
 /************END OF GLOBAL VARIABLES**********************/
 void waitToStartGame() {
