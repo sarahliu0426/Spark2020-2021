@@ -205,6 +205,9 @@ void updateTarget(int prevTarget) {
 /************ END OF BALL DETECTION FUNCTIONS ***********/
 
 /************ START OF OUTPUT FUNCTIONS ***********/
+void updateLights(int lastHole, int newHole){
+
+}
 
 /************ END OF OUTPUT FUNCTIONS ***********/
 
