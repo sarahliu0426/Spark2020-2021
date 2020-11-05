@@ -6,7 +6,7 @@
 #define SCOREINCREASE 10
 const int echoPin = 9;
 const int trigPin = 10;
-#define NUMTARGETS 8
+#define NUMTARGETS 30
 
 /************END OF CONSTANTS*********************/
 
@@ -19,15 +19,18 @@ long duration;
 int distance;
 
 bool playingGame = true; //true if someone is playing, false if game is idle
+bool wonGame = false;
 
 int score = 0;
 int targetPin = 0;
 bool targetBroken = false;
 bool bottomBroken = false;
 
-int targetHoles[NUMTARGETS];
+int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
 
 /************END OF GLOBAL VARIABLES**********************/
+
+
 void waitToStartGame() {
   //wiat and do nothing until someone presses "start"
   //then continue with game loop
@@ -38,6 +41,22 @@ void checkIfGameOver () {
   //check if user "won" or "lost"
   //if user hasn't moved for a while, we assume they walked away and end the game
   Serial.println("check if game over");
+}
+
+void updateTarget() {
+  
+  randomSeed(analogRead(0));
+
+  int targetIncr = (int)random(1,3);
+
+  int oldTarget = targetPin;
+  
+  targetPin += targetIncr;
+
+  if(targetPin > NUMTARGETHOLES)
+    wonGame = true;
+  else
+    updateLights(oldTarget, targetPin targetIncr);
 }
 
 void resetBar() {
@@ -129,7 +148,6 @@ bool beamBroken(int target)
 
   //pinMode(LEDPIN, OUTPUT);
 
-
   // initialize the sensor pin as an input:
   //pinMode(target, INPUT);
   //digitalWrite(target, HIGH); // turn on the pullup
@@ -158,19 +176,6 @@ bool beamBroken(int target)
 }
 
 void ballEntry() {
-  //  If ball falls into a bad hole
-  //    End the game
-
-  //If ball falls into target hole
-  //  Increment and display score
-  //  increment the score
-  //  Start the next level
-  //  Choose a new target hole
-
-  //TODO for next week:
-  //choose an input sensor (IR vs ultrasonic distance vs reed switch vs limit switch)
-  //based on sensor, write code to determine if ball got close enough === fell into that hole
-  //need 1 sensor for bottom of gameboard: if ball got to bottom of the gameboard, and didn't trigger a target hole, it went into a bad hole
 
   int fellIntoTargetHole = true; //TODO: change to false
   int fellIntoBadHole = false;
@@ -180,10 +185,7 @@ void ballEntry() {
     resetBar();
     resetBall();
     //updateHighScore();
-    
-    //TODO: decide how to choose a new targetPin
-
-    //TODO: choose a new hole
+    updateTarget();
     
   } else if (bottomBroken) { //ball fell in bad hole
     //TODO: decide how many "lives" a player can have
@@ -218,6 +220,7 @@ void setup() {
   for (int i = 0; i < NUMTARGETS; i++) {
     pinMode(i, INPUT); //IR receivers, one pin per target hole
     digitalWrite(i, HIGH); // turn on the pullup
+    targetHoles[i] = i;
   }
 
   pinMode(8, OUTPUT);
