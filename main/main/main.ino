@@ -204,7 +204,9 @@ void updateTarget(int prevTarget) {
 
 /************ END OF BALL DETECTION FUNCTIONS ***********/
 
+/************ START OF OUTPUT FUNCTIONS ***********/
 
+/************ END OF OUTPUT FUNCTIONS ***********/
 
 void setup() {
   // put your setup code here, to run once:
