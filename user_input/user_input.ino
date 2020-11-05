@@ -9,15 +9,10 @@ const int echoPin1 = 9;
 const int trigPin2 = 8;
 const int echoPin2 = 7;
 
-// distance between sensor and object
-//distance[0] == left
-//distance[1] == right
-int distances[2];
-
 RunningAverage left_sensor(20);
 RunningAverage right_sensor(20);
 
-int sample_distance_right() {
+float sample_distance_right() {
   int current_duration;
   int current_distance;
   
@@ -49,7 +44,7 @@ int sample_distance_right() {
 }
 
 //get a distance from the sensor
-int sample_distance_left() {
+float sample_distance_left() {
   int current_duration;
   int current_distance;
   
@@ -67,12 +62,12 @@ int sample_distance_left() {
 }
 
 void get_user_input(){
-  left_sensor.addValue(sample_distance_left);
-  right_sensor.addValue(sample_distance_right);
-  Serial.print("Left Distance: ");
-  Serial.println(left_sensor.getAverage());
-  Serial.print("\nRight Distance: ");
-  Serial.println(right_sensor.getAverage());
+  left_sensor.addValue(sample_distance_left());
+  right_sensor.addValue(sample_distance_right());
+  //Serial.print("Left Distance: ");
+  //Serial.println(left_sensor.getAverage());
+  //Serial.print("\nRight Distance: ");
+  //Serial.println(right_sensor.getAverage());
 }
 
 //setup to be run once
