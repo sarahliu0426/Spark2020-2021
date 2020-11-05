@@ -210,7 +210,8 @@ void updateTarget(int prevTarget) {
 
 /************ START OF OUTPUT FUNCTIONS ***********/
 void updateLights(int lastHole, int newHole){
-
+  digitalWrite(lastHole, LOW)
+  digitalWrite(newHole, HIGH)
 }
 
 void updateScore(unsigned long finishTime){
