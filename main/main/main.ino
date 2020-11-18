@@ -237,6 +237,21 @@ void updateLights(int lastHole, int newHole){
   digitalWrite(newHole, HIGH)
 }
 
+//we can put this array somewhere else
+//for the seven seg display
+//we should probably wait until we know which display
+//we're using to code this 
+int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
+                          { 0,1,1,0,0,0,0 },    // 1
+                          { 1,1,0,1,1,0,1 },    // 2
+                          { 1,1,1,1,0,0,1 },    // 3
+                          { 0,1,1,0,0,1,1 },    // 4
+                          { 1,0,1,1,0,1,1 },    // 5
+                          { 1,0,1,1,1,1,1 },    // 6
+                          { 1,1,1,0,0,0,0 },    // 7
+                          { 1,1,1,1,1,1,1 },    // 8
+                          { 1,1,1,0,0,1,1 }};   // 9
+                         
 void updateScore(unsigned long finishTime){
     unsigned long completionTime = finishTime-startTime; 
     score += 12 - (int)(completionTime*10)%12; 
