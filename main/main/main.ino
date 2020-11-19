@@ -21,7 +21,6 @@ int distance;
 bool playingGame = true; //true if someone is playing, false if game is idle
 bool wonGame = false;
 
-
 int score = 0;
 int targetPin = 0;
 bool targetBroken = false;
@@ -30,9 +29,8 @@ bool bottomBroken = false;
 //global variables for timing 
 unsigned long startTime;  //time when the new hole is assigned 
 
+
 int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
-
-
 /************END OF GLOBAL VARIABLES**********************/
 
 
@@ -58,13 +56,10 @@ void updateTarget() {
   
   targetPin += targetIncr;
 
-  //temp
-  int NUMTARGETHOLES = 0;
-  if(targetPin > NUMTARGETHOLES)
-    wonGame = true;
-  else
-  //updateLights(oldTarget, targetPin targetIncr);
-    updateLights(oldTarget, targetPin);
+  if(targetPin > NUMTARGETHOLES) 
+    targetPin = 0;
+  
+  updateLights(oldTarget, targetPin targetIncr);
 }
 
 void resetBar() {
@@ -229,8 +224,8 @@ void updateTarget(int prevTarget) {
 
 /************ START OF OUTPUT FUNCTIONS ***********/
 void updateLights(int lastHole, int newHole){
-  digitalWrite(lastHole, LOW);
-  digitalWrite(newHole, HIGH);
+  digitalWrite(lastHole, LOW)
+  digitalWrite(newHole, HIGH)
 }
 
 //we can put this array somewhere else
