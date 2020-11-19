@@ -1,4 +1,43 @@
-//jotted down some ideas. we'll decide what kinds of arguments to pass to the functions soon
+/* TO DO
+Bar movement mechanism:
+- control motors to move bar: Janelle and Matt
+  - program motor drivers for the stepper motors
+  - program motors
+- make sure bar is in starting position resetBar() (1 person)
+
+- convert distance sensor distances to appropriate motor rotations
+- prevent bar from hitting the ceiling or floor
+
+Detect if ball fell into hole: Natalia
+- assign pins for each sensor and check sensors for each hole in the function ballEntry()
+
+Select new hole as a target hole: Alex (almost done)
+- discuss option: for first 4 holes, choose easy ones, then choose random holes for the rest of the game
+
+Ball Reset: Matt and Janelle
+- Check with mech: how many balls? make sure ball is at bottom before loading ball
+- Load ball when bar is at bottom
+- servo motor?
+
+Gameplay: Alex and Ginny
+- make sure functions r being called in the right spot in main loop()
+- determine inputs and outputs for each function
+
+Code to trigger "start the game": Natalia
+- if person waves their hands they start the game
+- choose a part? IR sensor?
+
+Set scores: Ginny
+- fine tune scoring
+
+7 seg displays for scoring: Natalia
+
+Determine who's protyping what and order parts: Alex and Janelle
+
+Done:
+- lights for holes
+
+*/
 
 /**********CONSTANTS*****************************/
 #define SENSORPIN 4
