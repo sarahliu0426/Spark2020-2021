@@ -50,7 +50,7 @@ void updateTarget() {
   
   randomSeed(analogRead(0));
 
-  int targetIncr = (int)random(1,3);
+  int targetIncr = (int)random(0,3);
 
   int oldTarget = targetPin;
   
