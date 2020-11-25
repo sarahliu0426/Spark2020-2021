@@ -57,7 +57,11 @@ long duration;
 // distance between sensor and object
 int distance;
 
+<<<<<<< Updated upstream
 bool playingGame = true; //true if someone is playing, false if game is idle
+=======
+bool playingGame = true; //true if someone is playing, false if game is idle or person lost 
+>>>>>>> Stashed changes
 bool wonGame = false;
 
 int score = 0;
@@ -68,6 +72,10 @@ bool bottomBroken = false;
 //global variables for timing 
 unsigned long startTime;  //time when the new hole is assigned 
 
+<<<<<<< Updated upstream
+=======
+int targetHoles[NUMTARGETS]; //ensure that this array is storing pin numbers 
+>>>>>>> Stashed changes
 
 int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
 /************END OF GLOBAL VARIABLES**********************/
