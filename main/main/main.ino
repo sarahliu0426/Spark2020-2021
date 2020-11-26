@@ -11,7 +11,7 @@ Bar movement mechanism:
 Detect if ball fell into hole: Natalia
 - assign pins for each sensor and check sensors for each hole in the function ballEntry()
 
-Select new hole as a target hole: Alex (almost done)
+Select new hole as a target hole: Alex (DONE)
 - discuss option: for first 4 holes, choose easy ones, then choose random holes for the rest of the game
 
 Ball Reset: Matt and Janelle
@@ -77,7 +77,6 @@ int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 
 void waitToStartGame() {
   //wiat and do nothing until someone presses "start"
   //then continue with game loop
-  
   Serial.println("wait to start the game. pretend someone starts playing game");
 }
 
@@ -180,9 +179,6 @@ int sample_distance() {
 void moveBar() {
   //get user input, ie "move left side down by X amount"
 
-  //1 is up 0 is down
-  bool left_direction = get_left_user_input();
-  bool right_direction = get_right_user_input();
   //control motors to move bar
   //Need to check position of bar:
   //If bar is too tilted, don't move it
