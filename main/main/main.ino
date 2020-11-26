@@ -60,7 +60,6 @@ int distance;
 
 
 bool playingGame = true; //true if someone is playing, false if game over
-bool wonGame = false;
 
 int score = 0;
 int targetPin = 0;
@@ -119,10 +118,10 @@ void resetGame(){
     resetBar();
     resetBall();
     score = 0;
-    updateScore(millis());
-
-    //TODO: Need a way to see when a new game has started and set the startTime
-    //TO CONSIDER: we may want to add in a pushbutton that starts the game 
+    updateScore();
+    digitalWrite(targetPin, LOW);
+    targetPin =0;
+    digitalWrite(targetPin, HIGH);
 }
 
 /****** USER INPUT FUNCTIONS ****/
@@ -241,7 +240,7 @@ void ballEntry() {
     //updateHighScore();
     updateTarget();
 
-    updateScore(millis());
+    updateScore();
     
   } else if (bottomBroken) { //ball fell in bad hole  
     playingGame = false;
@@ -275,9 +274,8 @@ int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
                           { 1,1,1,1,1,1,1 },    // 8
                           { 1,1,1,0,0,1,1 }};   // 9
                          
-void updateScore(unsigned long finishTime){
-    unsigned long completionTime = finishTime-startTime; 
-    score += 12 - (int)(completionTime*10)%12; 
+void updateScore(){
+
     
 }
 
@@ -312,17 +310,10 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  waitToStartGame();
-  resetBar();
-  resetBall();
-  score = 0;
-
-  targetPin = 0; //remove when finished updateTarget()
-  //updateTarget(); //choose 1st target
-
-  //dummy counter for mimicking a game loop
-  int dummyCounter = 0;
+  
+  targetPin =0;
+  resetGame(); //sets bar, ball, score, lights for initial game start
+  waitToStartGame(); //wait for user to start game and set PlayingGame = true
 
   while (playingGame) {
     //user input: just for testing purposes
@@ -338,13 +329,5 @@ void loop() {
     bottomBroken=beamBroken(BOTTOMPIN);
 
 
-    if (dummyCounter > 10) {
-      playingGame = false;
-    }
-    dummyCounter++;
   }
-
-  resetBar();
-  //updateScore();
-  //turnOffAllLights();
 }
