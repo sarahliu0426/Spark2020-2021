@@ -22,6 +22,7 @@ Ball Reset: Matt and Janelle
 Gameplay: Alex and Ginny
 - make sure functions r being called in the right spot in main loop()
 - determine inputs and outputs for each function
+- fix playingGame bool 
 
 Code to trigger "start the game": Natalia
 - if person waves their hands they start the game
@@ -85,6 +86,7 @@ void checkIfGameOver () {
   Serial.println("check if game over");
 }
 
+
 void updateTarget() {
   
   randomSeed(analogRead(0));
@@ -96,9 +98,9 @@ void updateTarget() {
   targetPin += targetIncr;
 
   if(targetPin > NUMTARGETHOLES) 
-    targetPin = 0;
+    targetPin = targetIncr;
   
-  updateLights(oldTarget, targetPin targetIncr);
+  updateLights(oldTarget, targetPin);
 }
 
 void resetBar() {
@@ -248,15 +250,6 @@ void ballEntry() {
   }
 
   resetBar();
-}
-
-void updateTarget(int prevTarget) {
-  //change the new target hole based on the last one
-  //decide if we want pre-specified "levels"
-  //turn off any lights on the old target hole
-  //make the new target hole light up
-
-  startTime = millis();
 }
 
 /************ END OF BALL DETECTION FUNCTIONS ***********/
