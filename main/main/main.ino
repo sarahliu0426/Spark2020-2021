@@ -74,9 +74,21 @@ int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 
 
 
 void waitToStartGame() {
-  //wiat and do nothing until someone presses "start"
+  //wait and do nothing until someone presses "start"
   //then continue with game loop
-  Serial.println("wait to start the game. pretend someone starts playing game");
+
+
+  //player places hand over one of the sensors to start
+  //has to be high above sensor
+  if (!get_left_user_input || !get_right_user_input) {
+    //start the game
+    playingGame = true;
+    resetGame();
+    
+  }
+  //otherwise do nothing
+  //Serial.println("wait to start the game. pretend someone starts playing game");
+
 }
 
 void checkIfGameOver () {
