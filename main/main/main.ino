@@ -83,7 +83,9 @@ void waitToStartGame() {
   //has to be high above sensor
   if (!get_left_user_input || !get_right_user_input) {
     //start the game
+    playingGame = true;
     resetGame();
+    
   }
   //otherwise do nothing
   //Serial.println("wait to start the game. pretend someone starts playing game");
