@@ -28,8 +28,9 @@ Code to trigger "start the game": Natalia
 - if person waves their hands they start the game
 - choose a part? IR sensor?
 
-Set scores: Ginny
+Set scores: Ginny (DONE)
 - fine tune scoring
+- function can be adjusted based on target hole difficulty
 
 7 seg displays for scoring: Natalia
 
@@ -62,12 +63,14 @@ int distance;
 bool playingGame = true; //true if someone is playing, false if game over
 
 int score = 0;
+int targetDifficulty = 0
 int targetPin = 0;
 bool targetBroken = false;
 bool bottomBroken = false;
 
 //global variables for timing 
-unsigned long startTime;  //time when the new hole is assigned 
+int startTime = 0; //time when the new hole is assigned
+unsigned long finishTime;  //time when the ball drops into target hole
 
 int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
 /************END OF GLOBAL VARIABLES**********************/
@@ -124,12 +127,14 @@ void resetBall() {
   //wait until ball is ready to roll onto the bar
   //put the ball back onto the bar
   Serial.println("reset ball");
+  startTime = finishTime
 }
 
 void resetGame(){
     resetBar();
     resetBall();
     score = 0;
+    finishTime = millis();
     updateScore();
     digitalWrite(targetPin, LOW);
     targetPin =0;
@@ -243,7 +248,7 @@ bool beamBroken(int target)
 void ballEntry() {
 
   int fellIntoTargetHole = true; //TODO: change to false
-  int fellIntoBadHole = false;
+  int fellIntoBadHole = false; 
 
   if (targetBroken) { //ball fell in good hole
     resetBar();
@@ -274,7 +279,7 @@ void updateLights(int lastHole, int newHole){
 //we can put this array somewhere else
 //for the seven seg display
 //we should probably wait until we know which display
-//we're using to code this 
+//we're using to code this u
 int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
                           { 0,1,1,0,0,0,0 },    // 1
                           { 1,1,0,1,1,0,1 },    // 2
@@ -286,9 +291,21 @@ int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
                           { 1,1,1,1,1,1,1 },    // 8
                           { 1,1,1,0,0,1,1 }};   // 9
                          
-void updateScore(){
+void updateScore() {
+  targetDifficulty += 1
 
+  if (targetDifficult <= 4 && (50 -(finishtime - startTime)/600) > 0) { // if target difficulty levels are used (first 4 are easy)
     
+    score += int(50 - (finishtime - startTime)/600) // user gets 0 if they spend more than 30 secs 
+    // (50) can be modified depending on how many digits can be displayed
+  }
+  else if (targetDifficult > 4 && (50 -(finishtime - startTime)/2400) > 0) {
+    score += int(50 - (finishtime - startTime)/2400) // user gets 0 if they spend more than 120 secs 
+  }
+
+  return score
+  
+  // function could be modified such that score given increases depending on difficulty
 }
 
 /************ END OF OUTPUT FUNCTIONS ***********/
@@ -333,7 +350,7 @@ void loop() {
     //Serial.print("Distance: ");
     //Serial.println(distance);
 
-    startTime = millis(); //might not need here depending on when updateTarget is called. 
+    finishTime = millis(); //might not need here depending on when updateTarget is called. 
     moveBar();
     ballEntry();
     checkIfGameOver();
