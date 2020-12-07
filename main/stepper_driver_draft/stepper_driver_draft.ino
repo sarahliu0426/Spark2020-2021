@@ -57,7 +57,11 @@ int barPosLeft = 0; //position of the left side of the bar in steps
 
 /******** variables for motor 2 *******/
 
-//once 1 motor is working, duplicate code for motor 2
+#define stp_2 7
+#define dir_2 8
+#define MS1_2 9
+#define MS2_2 10
+#define EN_2  11
 int barPosRight = 0;
 
 /***************************************/
@@ -72,53 +76,85 @@ void setup() {
   pinMode(MS2_1, OUTPUT);
   pinMode(EN_1, OUTPUT);
 
-  //TODO: right motor setup
+  //right motor setup
+  pinMode(stp_2, OUTPUT);
+  pinMode(dir_2, OUTPUT);
+  pinMode(MS1_2, OUTPUT);
+  pinMode(MS2_2, OUTPUT);
+  pinMode(EN_2, OUTPUT);
 
   resetEDPins(); //Reset all 10 Easy Driver pins to default states
 
   Serial.begin(9600); //Open Serial connection for debugging. remove when merging.
-  Serial.println("Enter number for control option:"); //LEFT MOTOR ONLY
   //assume user enters 1 for normal, 2 for fast, 3 for fastest speed upwards
   //-1, -2, and -3 move the bar downwards
 }
 
-//TODO: instead of using the serial monitor to control the motors, we'll need
-//to check the values from our distance sensors to decide which motor and which direction to move
-
 void loop() {
-  // FOR LEFT MOTOR ONLY
-  while (Serial.available()) {
 
-    userInputLeft = Serial.parseInt(); //Read user input and trigger appropriate function
-    Serial.print("Received: ");
-    Serial.print(userInputLeft);
-    Serial.println();
-    
-    digitalWrite(EN_1, LOW); //Pull enable pin low to allow motor control
-
-    if (userInputLeft > 0
-        && barPosLeft < CEILING
-        && barTilt > -MAX_BAR_TILT) {       //move left side of bar UP
-      moveStepper(true, dir_1, stp_1, MAXDELAY - userInputLeft);
-      barPosLeft += userInputLeft;
-    } else if (userInputLeft < 0
-               && barPosLeft > FLOOR
-               && barTilt < MAX_BAR_TILT) {     //move left side of bar DOWN
-      moveStepper(false, dir_1, stp_1, MAXDELAY - userInputLeft);
-      barPosLeft -= userInputLeft;
-    }
-
-    barTilt = barPosRight - barPosLeft;
-    
-    Serial.print("left bar pos = ");
-    Serial.print(barPosLeft);
-    Serial.println();
-    Serial.print("bar tilt = ");
-    Serial.print(barTilt);
-    Serial.println();
-    
-    resetEDPins();
+  //TODO: delete the serial prompts and parseInt and replace "userInputLeft" with the actual variable from user input fxns
+  Serial.println("Enter a speed for left motor:");
+  while (!Serial.available()) {
   }
+  userInputLeft = Serial.parseInt(); //Read user input and trigger appropriate function
+  Serial.print("Received: ");
+  Serial.print(userInputLeft);
+  Serial.println();
+
+  digitalWrite(EN_1, LOW); //Pull enable pin low to allow motor control
+
+  if (userInputLeft > 0
+      && barPosLeft < CEILING
+      && barTilt > -MAX_BAR_TILT) {       //move left side of bar UP
+    moveStepper(true, dir_1, stp_1, MAXDELAY - userInputLeft);
+    barPosLeft += userInputLeft;
+  } else if (userInputLeft < 0
+             && barPosLeft > FLOOR
+             && barTilt < MAX_BAR_TILT) {     //move left side of bar DOWN
+    moveStepper(false, dir_1, stp_1, MAXDELAY - userInputLeft);
+    barPosLeft -= userInputLeft;
+  }
+
+  barTilt = barPosRight - barPosLeft;
+
+  //TODO: delete the serial prompts and parseInt and replace "userInputRight" with the actual variable from user input fxns
+
+  Serial.println("Enter a speed for right motor:");
+  while (!Serial.available()) {
+  }
+  userInputRight = Serial.parseInt(); //Read user input and trigger appropriate function
+  Serial.print("Received: ");
+  Serial.print(userInputRight);
+  Serial.println();
+
+  digitalWrite(EN_2, LOW); //Pull enable pin low to allow motor control
+
+  if (userInputRight > 0
+      && barPosRight < CEILING
+      && barTilt < MAX_BAR_TILT) {       //move right side of bar UP
+    moveStepper(true, dir_2, stp_2, MAXDELAY - userInputRight);
+    barPosRight += userInputRight;
+  } else if (userInputRight < 0
+             && barPosLeft > FLOOR
+             && barTilt > -MAX_BAR_TILT) {     //move right side of bar DOWN
+    moveStepper(false, dir_2, stp_2, MAXDELAY - userInputRight);
+    barPosRight -= userInputRight;
+  }
+
+  barTilt = barPosRight - barPosLeft;
+
+  Serial.print("left bar pos = ");
+  Serial.print(barPosLeft);
+  Serial.println();
+  Serial.print("right bar pos = ");
+  Serial.print(barPosRight);
+  Serial.println();
+  Serial.print("bar tilt = ");
+  Serial.print(barTilt);
+  Serial.println();
+
+  resetEDPins();
+
 }
 
 //Reset Easy Driver pins to default states
@@ -130,6 +166,11 @@ void resetEDPins()
   digitalWrite(MS1_1, LOW);
   digitalWrite(MS2_1, LOW);
   digitalWrite(EN_1, HIGH);
+  digitalWrite(stp_2, LOW);
+  digitalWrite(dir_2, LOW);
+  digitalWrite(MS1_2, LOW);
+  digitalWrite(MS2_2, LOW);
+  digitalWrite(EN_2, HIGH);
 }
 
 void moveStepper(bool goingUp, int dirPin, int stpPin, int stepperDelay)
@@ -137,16 +178,14 @@ void moveStepper(bool goingUp, int dirPin, int stpPin, int stepperDelay)
   Serial.print("Moving stepper ");
 
   if (goingUp) {
-    Serial.print("up with delay ");
+    Serial.print("up");
     digitalWrite(dirPin, LOW); //Pull direction pin low to move "forward"
   } else {
-    Serial.print("down with delay ");
+    Serial.print("down");
     digitalWrite(dirPin, HIGH); //Pull direction pin high to move "backward"
   }
-
-  Serial.print(stepperDelay, DEC);
   Serial.println();
-  
+
   for (x = 0; x < STEP_INCR; x++) //Loop the forward stepping enough times for motion to be visible
   {
     digitalWrite(stpPin, HIGH); //Trigger one step forward
@@ -154,6 +193,4 @@ void moveStepper(bool goingUp, int dirPin, int stpPin, int stepperDelay)
     digitalWrite(stpPin, LOW); //Pull step pin low so it can be triggered again
     delay(stepperDelay);
   }
-  Serial.println("Enter new option");
-  Serial.println();
 }
