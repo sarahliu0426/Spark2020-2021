@@ -1,196 +1,303 @@
 /***************************
-  Code was modified from:
+
+  Moves the stepper motors for the bar, given a value from user input (ie distance sensors)
+  
+  IMPORTANT: If you don't have a driver connected to your arduino and directly plugged the stepper into
+            your arduino instead, uncomment the code labeled "without driver" and 
+            comment out the code labeled "with driver"
+
+  Assumptions:
+  - distance sensor code will give the motors an int within the range [-3, 3]
+  - +ve speed means "up", -ve speed means "down", 0 means stationary, and |3| is the fastest speed
+  - when u power on the arduino, the bar always starts at the height needed to load a ball
+  - spinning motor CCW moves bar UP
+  - the top of the display is at stepper position 0
+  - stepper position increases as bar goes down
+
+ coordinate system:
+
+        (top of display)
+ [barPosL = 0         barPosR = 0]
+  |                     |
+  |                     |
+  ...    (gameboard)   ...
+  |                     |
+  |                     |
+[barPosL = 600       barPosR = 600]
+        (bottom of display)
+
+  References:
+
+  AccelStepper Library Documentation
+  https://www.airspayce.com/mikem/arduino/AccelStepper/classAccelStepper.html
+
+  Makerguides A4988 Motor Driver Tutorial
+  - includes tips about setting up hardware as well as step-by-step code
+  https://www.makerguides.com/a4988-stepper-motor-driver-arduino-tutorial/
+
+  Tutorial for smaller 5V 28byj48 stepper motors
+  https://lastminuteengineers.com/28byj48-stepper-motor-arduino-tutorial/
 
   SparkFun Easy Driver Basic Demo
-  Toni Klopfenstein @ SparkFun Electronics
-  March 2015
-  Arduino 1.6.0
-
+  - we are no longer using this driver, but the pin setup is similar
   https://github.com/sparkfun/Easy_Driver
-  Simple demo sketch to demonstrate how 5 digital pins can drive a bipolar stepper motor,
-  using the Easy Driver (https://www.sparkfun.com/products/12779). Also shows the ability to change
-  microstep size, and direction of motor movement.
 
-  Example based off of demos by Brian Schmalz (designer of the Easy Driver).
-  http://www.schmalzhaus.com/EasyDriver/Examples/EasyDriverExamples.html
-
-  The following code is for 1 stepper driver
-  1 stepper driver can drive 1 motor and needs 5 arduino pins.
-  We'll need to duplicate this code, and use 10 pins in total to drive 2 motors.
  ***************************/
 
-//TODO: change pins to the actual pins we're using
+#include <AccelStepper.h>
+#include <Stepper.h>
+#include <MultiStepper.h>
 
 //EXPERIMENTAL VALUES - will need to adjust as we prototype
-#define CEILING 200 //max value of bar postion
-#define FLOOR 3 //min value of bar position. include a bit of space so it won't hit the actual floor
-#define STEP_INCR 1000 //number of steps to move at each iteration
-
-//distance sensors will give the motors a number within the range [-3, 3]
+#define CEILING 0                //highest height of bar
+#define FLOOR 10000              //bottom of the playing area, not actually the floor
+#define BALL_RETURN_HEIGHT 11000 //lowest height of bar, where bar will pick up ball
+#define MAX_BAR_TILT 2000        //maximum vertical slope of bar, aka barPosRight - barPosLeft
+#define MAX_SPEED 5
+#define SPEED_MULT 1 //multiply user input value with this number to set desired stepper speed
+#define STEP_INCR 1   //steps taken on each loop() iteration
+#define BALL_RETURN_DELAY 2000 //time to wait until a new ball has rolled onto bar
+//distance sensors code will give the motors a number within the range [-3, 3]
 //-ve speed means "down", +ve speed means "up"
 #define STOP 0
 #define SLOW 1
 #define MED 2
 #define FAST 3
 
-//used to control delay. (MAXDELAY - FAST) gives a delay of 1
-//which is faster then (MAXDELAY - SLOW), which gives a delay of 3
-#define MAXDELAY 4
+//without AccelStepper:
+// #define STEP_INCR 50 //number of steps to move at each iteration
+// #define MAXDELAY 4
+//used to control delay. eg (MAXDELAY - FAST) gives a delay of 1
+//which is faster than (MAXDELAY - SLOW), which gives a delay of 3
+
+#define STEPS_PER_REV 2048 //only for 28byj stepper with ULN2003 driver
 
 int userInputLeft; //from distance sensor functions
 int userInputRight;
+int barPosL = FLOOR;
+int barPosR = FLOOR;
 
-int x; //looping variable. reused multiple times
-
-#define MAX_BAR_TILT 10 //maximum vertical slope of bar, aka barPosRight - barPosLeft
 int barTilt = 0;
 
-/******** variables for motor 1 *******/
-#define stp_1 2
-#define dir_1 3
-#define MS1_1 4
-#define MS2_1 5
-#define EN_1  6
-int barPosLeft = 0; //position of the left side of the bar in steps
+//setup motor pins
+#define RT_COIL_1A 10
+#define RT_COIL_1B 11
+#define RT_COIL_2A 12
+#define RT_COIL_2B 13
+Stepper motorR = Stepper(STEPS_PER_REV, RT_COIL_1A, RT_COIL_1B, RT_COIL_2A, RT_COIL_2B);
+// AccelStepper accelMotorR(AccelStepper::FULL4WIRE, RT_COIL_1A, RT_COIL_1B, RT_COIL_2A, RT_COIL_2B);
+
+#define LT_COIL_1A 4
+#define LT_COIL_1B 5
+#define LT_COIL_2A 6
+#define LT_COIL_2B 7
+Stepper motorL = Stepper(STEPS_PER_REV, LT_COIL_1A, LT_COIL_1B, LT_COIL_2A, LT_COIL_2B);
+// AccelStepper accelMotorL(AccelStepper::FULL4WIRE, LT_COIL_1A, LT_COIL_1B, LT_COIL_2A, LT_COIL_2B);
 
 /***************************************/
 
-/******** variables for motor 2 *******/
+////To make both motors arrive at the same position at the same time
+//MultiStepper bothSteppers;
 
-#define stp_2 7
-#define dir_2 8
-#define MS1_2 9
-#define MS2_2 10
-#define EN_2  11
-int barPosRight = 0;
+//FOR PROTOTYPING ONLY. pushbuttons and LED pins
+//these should actually be global variables from other parts of code
+#define R_UP 9 //pushbuttons
+#define R_DOWN 8
+#define L_UP 3
+#define L_DOWN 2
+#define SWAP A0
 
-/***************************************/
+#define L_FLOOR A5 //LEDs
+#define L_CEIL A4
+#define R_FLOOR A3
+#define R_CEIL A2
+#define MAX_TILT_REACHED A1
 
-void setup() {
-  // put your setup code here, to run once:
+bool swapControls = false;
+int prevSwapReading = LOW;
+//end of prototyping variables
 
-  //left motor setup
-  pinMode(stp_1, OUTPUT);
-  pinMode(dir_1, OUTPUT);
-  pinMode(MS1_1, OUTPUT);
-  pinMode(MS2_1, OUTPUT);
-  pinMode(EN_1, OUTPUT);
-
-  //right motor setup
-  pinMode(stp_2, OUTPUT);
-  pinMode(dir_2, OUTPUT);
-  pinMode(MS1_2, OUTPUT);
-  pinMode(MS2_2, OUTPUT);
-  pinMode(EN_2, OUTPUT);
-
-  resetEDPins(); //Reset all 10 Easy Driver pins to default states
-
-  Serial.begin(9600); //Open Serial connection for debugging. remove when merging.
-  //assume user enters 1 for normal, 2 for fast, 3 for fastest speed upwards
-  //-1, -2, and -3 move the bar downwards
-}
-
-void loop() {
-
-  //TODO: delete the serial prompts and parseInt and replace "userInputLeft" with the actual variable from user input fxns
-  Serial.println("Enter a speed for left motor:");
-  while (!Serial.available()) {
-  }
-  userInputLeft = Serial.parseInt(); //Read user input and trigger appropriate function
-  Serial.print("Received: ");
-  Serial.print(userInputLeft);
-  Serial.println();
-
-  digitalWrite(EN_1, LOW); //Pull enable pin low to allow motor control
-
-  if (userInputLeft > 0
-      && barPosLeft < CEILING
-      && barTilt > -MAX_BAR_TILT) {       //move left side of bar UP
-    moveStepper(true, dir_1, stp_1, MAXDELAY - userInputLeft);
-    barPosLeft += userInputLeft;
-  } else if (userInputLeft < 0
-             && barPosLeft > FLOOR
-             && barTilt < MAX_BAR_TILT) {     //move left side of bar DOWN
-    moveStepper(false, dir_1, stp_1, MAXDELAY - userInputLeft);
-    barPosLeft -= userInputLeft;
-  }
-
-  barTilt = barPosRight - barPosLeft;
-
-  //TODO: delete the serial prompts and parseInt and replace "userInputRight" with the actual variable from user input fxns
-
-  Serial.println("Enter a speed for right motor:");
-  while (!Serial.available()) {
-  }
-  userInputRight = Serial.parseInt(); //Read user input and trigger appropriate function
-  Serial.print("Received: ");
-  Serial.print(userInputRight);
-  Serial.println();
-
-  digitalWrite(EN_2, LOW); //Pull enable pin low to allow motor control
-
-  if (userInputRight > 0
-      && barPosRight < CEILING
-      && barTilt < MAX_BAR_TILT) {       //move right side of bar UP
-    moveStepper(true, dir_2, stp_2, MAXDELAY - userInputRight);
-    barPosRight += userInputRight;
-  } else if (userInputRight < 0
-             && barPosLeft > FLOOR
-             && barTilt > -MAX_BAR_TILT) {     //move right side of bar DOWN
-    moveStepper(false, dir_2, stp_2, MAXDELAY - userInputRight);
-    barPosRight -= userInputRight;
-  }
-
-  barTilt = barPosRight - barPosLeft;
-
-  Serial.print("left bar pos = ");
-  Serial.print(barPosLeft);
-  Serial.println();
-  Serial.print("right bar pos = ");
-  Serial.print(barPosRight);
-  Serial.println();
-  Serial.print("bar tilt = ");
-  Serial.print(barTilt);
-  Serial.println();
-
-  resetEDPins();
-
-}
-
-//Reset Easy Driver pins to default states
-//TODO: reset right motor pins
-void resetEDPins()
+void setup()
 {
-  digitalWrite(stp_1, LOW);
-  digitalWrite(dir_1, LOW);
-  digitalWrite(MS1_1, LOW);
-  digitalWrite(MS2_1, LOW);
-  digitalWrite(EN_1, HIGH);
-  digitalWrite(stp_2, LOW);
-  digitalWrite(dir_2, LOW);
-  digitalWrite(MS1_2, LOW);
-  digitalWrite(MS2_2, LOW);
-  digitalWrite(EN_2, HIGH);
+  // bothSteppers.addStepper(accelMotorR);
+  // bothSteppers.addStepper(accelMotorL);
+  //   accelMotorR.setMaxSpeed(MAX_SPEED);
+  // accelMotorL.setMaxSpeed(MAX_SPEED);
+
+  motorR.setSpeed(MAX_SPEED);
+  motorL.setSpeed(MAX_SPEED);
+
+
+  //FOR PROTOTYPING ONLY
+  pinMode(R_DOWN, INPUT);
+  pinMode(R_UP, INPUT);
+  pinMode(L_DOWN, INPUT);
+  pinMode(L_UP, INPUT);
+  pinMode(SWAP, INPUT);
+  pinMode(L_FLOOR, OUTPUT);
+  pinMode(R_FLOOR, OUTPUT);
+  pinMode(L_CEIL, OUTPUT);
+  pinMode(R_CEIL, OUTPUT);
+  pinMode(MAX_TILT_REACHED, OUTPUT);
+
+  barPosL = FLOOR;
+  barPosR = FLOOR;
+
+  resetBar(); 
+
 }
 
-void moveStepper(bool goingUp, int dirPin, int stpPin, int stepperDelay)
+void loop()
 {
-  Serial.print("Moving stepper ");
-
-  if (goingUp) {
-    Serial.print("up");
-    digitalWrite(dirPin, LOW); //Pull direction pin low to move "forward"
-  } else {
-    Serial.print("down");
-    digitalWrite(dirPin, HIGH); //Pull direction pin high to move "backward"
-  }
-  Serial.println();
-
-  for (x = 0; x < STEP_INCR; x++) //Loop the forward stepping enough times for motion to be visible
+  //PROTYPING ONLY - get user input from pushbuttons
+  if (digitalRead(R_UP) == HIGH)
   {
-    digitalWrite(stpPin, HIGH); //Trigger one step forward
-    delay(stepperDelay);
-    digitalWrite(stpPin, LOW); //Pull step pin low so it can be triggered again
-    delay(stepperDelay);
+    userInputRight = 1;
   }
+  else if (digitalRead(R_DOWN) == HIGH)
+  {
+    userInputRight = -1;
+  }
+  else
+  {
+    userInputRight = 0;
+  }
+
+  if (digitalRead(L_UP) == HIGH)
+  {
+    userInputLeft = 1;
+  }
+  else if (digitalRead(L_DOWN) == HIGH)
+  {
+    userInputLeft = -1;
+  }
+  else
+  {
+    userInputLeft = 0;
+  }
+
+  //if button pressed, toggle left and right controls
+  if (digitalRead(SWAP) == LOW && prevSwapReading == HIGH)
+  {
+    swapControls = !swapControls;
+  }
+  prevSwapReading = digitalRead(SWAP);
+
+  moveSteppers();
+}
+
+void moveSteppers() {
+  //Move motors
+  if (swapControls) //special level: SWAP right and left controls
+  {
+//    motorR.setSpeed(userInputLeft * SPEED_MULT);
+//    motorL.setSpeed(userInputRight * SPEED_MULT);
+
+    if (userInputRight > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
+    { //move LEFT side of bar UP
+      motorL.step(-STEP_INCR);
+      barPosL--;
+    }
+    else if (userInputRight < 0 && barPosL < FLOOR && barTilt < MAX_BAR_TILT)
+    { //move LEFT side of bar DOWN
+      motorL.step(STEP_INCR);
+      barPosL++;
+    }
+
+    if (userInputLeft > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
+    { //move RIGHT side of bar UP
+      motorR.step(-STEP_INCR);
+      barPosR--;
+    }
+    else if (userInputLeft < 0 && barPosR < FLOOR && barTilt > -MAX_BAR_TILT)
+    { //move RIGHT side of bar DOWN
+      motorR.step(STEP_INCR);
+      barPosR++;
+    }
+  }
+  else //normal controls
+  {
+//    motorR.setSpeed(userInputRight * SPEED_MULT);
+//    motorL.setSpeed(userInputLeft * SPEED_MULT);
+
+    if (userInputRight > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
+    { //move right side of bar UP
+      motorR.step(-STEP_INCR);
+      barPosR--;
+    }
+    else if (userInputRight < 0 && barPosR < FLOOR && barTilt > -MAX_BAR_TILT)
+    { //move right side of bar DOWN
+      motorR.step(STEP_INCR);
+      barPosR++;
+    }
+
+    if (userInputLeft > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
+    { //move left side of bar UP
+      motorL.step(-STEP_INCR);
+      barPosL--;
+    }
+    else if (userInputLeft < 0 && barPosL < FLOOR && barTilt < MAX_BAR_TILT)
+    { //move left side of bar DOWN
+      motorL.step(STEP_INCR);
+      barPosL++;
+    }
+  }
+
+  barTilt = barPosL - barPosR;
+
+  //turn on LEDs for debugging
+  if (abs(barTilt) == MAX_BAR_TILT)
+  {
+    digitalWrite(MAX_TILT_REACHED, HIGH);
+  }
+  else
+  {
+    digitalWrite(MAX_TILT_REACHED, LOW);
+  }
+
+  switch (barPosL)
+  {
+  case FLOOR:
+    digitalWrite(L_FLOOR, HIGH);
+    break;
+  case CEILING:
+    digitalWrite(L_CEIL, HIGH);
+    break;
+  default:
+    digitalWrite(L_FLOOR, LOW);
+    digitalWrite(L_CEIL, LOW);
+  }
+
+  switch (barPosR)
+  {
+  case FLOOR:
+    digitalWrite(R_FLOOR, HIGH);
+    break;
+  case CEILING:
+    digitalWrite(R_CEIL, HIGH);
+    break;
+  default:
+    digitalWrite(R_FLOOR, LOW);
+    digitalWrite(R_CEIL, LOW);
+  }
+}
+
+void resetBar()
+{
+  while(barPosL < BALL_RETURN_HEIGHT && barPosR < BALL_RETURN_HEIGHT) {
+    motorL.step(STEP_INCR);
+    motorR.step(STEP_INCR);
+    barPosL++;
+    barPosR++;
+  }
+
+  delay(BALL_RETURN_DELAY);
+
+  while(barPosL > FLOOR && barPosR > FLOOR) {
+    motorL.step(-STEP_INCR);
+    motorR.step(-STEP_INCR);
+    barPosL--;
+    barPosR--;
+  }
+  
 }
