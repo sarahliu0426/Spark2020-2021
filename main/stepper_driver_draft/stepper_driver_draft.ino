@@ -23,8 +23,12 @@
   ...    (gameboard)   ...
   |                     |
   |                     |
-[barPosL = 600       barPosR = 600]
-        (bottom of display)
+[barPosL = 10000       barPosR = 10000]
+   (bottom of playing area aka FLOOR)
+  |                     |
+  |                     |
+ [barPosL = 11000       barPosR = 11000] 
+ (height for ball return area aka BALL_RETURN_HEIGHT)
 
   References:
 
@@ -53,8 +57,8 @@
 #define FLOOR 10000              //bottom of the playing area, not actually the floor
 #define BALL_RETURN_HEIGHT 11000 //lowest height of bar, where bar will pick up ball
 #define MAX_BAR_TILT 2000        //maximum vertical slope of bar, aka barPosRight - barPosLeft
-#define MAX_SPEED 5
-#define SPEED_MULT 1 //multiply user input value with this number to set desired stepper speed
+#define MAX_SPEED 15
+#define SPEED_MULT 5 //multiply user input value with this number to set desired stepper speed
 #define STEP_INCR 1   //steps taken on each loop() iteration
 #define BALL_RETURN_DELAY 2000 //time to wait until a new ball has rolled onto bar
 //distance sensors code will give the motors a number within the range [-3, 3]
@@ -63,12 +67,6 @@
 #define SLOW 1
 #define MED 2
 #define FAST 3
-
-//without AccelStepper:
-// #define STEP_INCR 50 //number of steps to move at each iteration
-// #define MAXDELAY 4
-//used to control delay. eg (MAXDELAY - FAST) gives a delay of 1
-//which is faster than (MAXDELAY - SLOW), which gives a delay of 3
 
 #define STEPS_PER_REV 2048 //only for 28byj stepper with ULN2003 driver
 
@@ -80,17 +78,17 @@ int barPosR = FLOOR;
 int barTilt = 0;
 
 //setup motor pins
-#define RT_COIL_1A 10
-#define RT_COIL_1B 11
-#define RT_COIL_2A 12
-#define RT_COIL_2B 13
+#define RT_COIL_1A 4
+#define RT_COIL_1B 5
+#define RT_COIL_2A 6
+#define RT_COIL_2B 7
 Stepper motorR = Stepper(STEPS_PER_REV, RT_COIL_1A, RT_COIL_1B, RT_COIL_2A, RT_COIL_2B);
 // AccelStepper accelMotorR(AccelStepper::FULL4WIRE, RT_COIL_1A, RT_COIL_1B, RT_COIL_2A, RT_COIL_2B);
 
-#define LT_COIL_1A 4
-#define LT_COIL_1B 5
-#define LT_COIL_2A 6
-#define LT_COIL_2B 7
+#define LT_COIL_1A 10
+#define LT_COIL_1B 11
+#define LT_COIL_2A 12
+#define LT_COIL_2B 13
 Stepper motorL = Stepper(STEPS_PER_REV, LT_COIL_1A, LT_COIL_1B, LT_COIL_2A, LT_COIL_2B);
 // AccelStepper accelMotorL(AccelStepper::FULL4WIRE, LT_COIL_1A, LT_COIL_1B, LT_COIL_2A, LT_COIL_2B);
 
@@ -115,6 +113,8 @@ Stepper motorL = Stepper(STEPS_PER_REV, LT_COIL_1A, LT_COIL_1B, LT_COIL_2A, LT_C
 
 bool swapControls = false;
 int prevSwapReading = LOW;
+
+int userSpeed = 1;
 //end of prototyping variables
 
 void setup()
@@ -140,8 +140,8 @@ void setup()
   pinMode(R_CEIL, OUTPUT);
   pinMode(MAX_TILT_REACHED, OUTPUT);
 
-  barPosL = FLOOR;
-  barPosR = FLOOR;
+  barPosL = 10000;
+  barPosR = 10000;
 
   resetBar(); 
 
@@ -182,36 +182,34 @@ void loop()
     swapControls = !swapControls;
   }
   prevSwapReading = digitalRead(SWAP);
-
-  moveSteppers();
+   
+  moveBar();
 }
 
-void moveSteppers() {
-  //Move motors
+void moveBar() {
+  //Move motors one step
   if (swapControls) //special level: SWAP right and left controls
   {
-//    motorR.setSpeed(userInputLeft * SPEED_MULT);
-//    motorL.setSpeed(userInputRight * SPEED_MULT);
 
     if (userInputRight > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
     { //move LEFT side of bar UP
-      motorL.step(-STEP_INCR);
+      motorL.step(STEP_INCR);
       barPosL--;
     }
     else if (userInputRight < 0 && barPosL < FLOOR && barTilt < MAX_BAR_TILT)
     { //move LEFT side of bar DOWN
-      motorL.step(STEP_INCR);
+      motorL.step(-STEP_INCR);
       barPosL++;
     }
 
     if (userInputLeft > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
     { //move RIGHT side of bar UP
-      motorR.step(-STEP_INCR);
+      motorR.step(STEP_INCR);
       barPosR--;
     }
     else if (userInputLeft < 0 && barPosR < FLOOR && barTilt > -MAX_BAR_TILT)
     { //move RIGHT side of bar DOWN
-      motorR.step(STEP_INCR);
+      motorR.step(-STEP_INCR);
       barPosR++;
     }
   }
@@ -222,23 +220,23 @@ void moveSteppers() {
 
     if (userInputRight > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
     { //move right side of bar UP
-      motorR.step(-STEP_INCR);
+      motorR.step(STEP_INCR);
       barPosR--;
     }
     else if (userInputRight < 0 && barPosR < FLOOR && barTilt > -MAX_BAR_TILT)
     { //move right side of bar DOWN
-      motorR.step(STEP_INCR);
+      motorR.step(-STEP_INCR);
       barPosR++;
     }
 
     if (userInputLeft > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
     { //move left side of bar UP
-      motorL.step(-STEP_INCR);
+      motorL.step(STEP_INCR);
       barPosL--;
     }
     else if (userInputLeft < 0 && barPosL < FLOOR && barTilt < MAX_BAR_TILT)
     { //move left side of bar DOWN
-      motorL.step(STEP_INCR);
+      motorL.step(-STEP_INCR);
       barPosL++;
     }
   }
@@ -285,8 +283,8 @@ void moveSteppers() {
 void resetBar()
 {
   while(barPosL < BALL_RETURN_HEIGHT && barPosR < BALL_RETURN_HEIGHT) {
-    motorL.step(STEP_INCR);
-    motorR.step(STEP_INCR);
+    motorL.step(-STEP_INCR);
+    motorR.step(-STEP_INCR);
     barPosL++;
     barPosR++;
   }
@@ -294,8 +292,8 @@ void resetBar()
   delay(BALL_RETURN_DELAY);
 
   while(barPosL > FLOOR && barPosR > FLOOR) {
-    motorL.step(-STEP_INCR);
-    motorR.step(-STEP_INCR);
+    motorL.step(STEP_INCR);
+    motorR.step(STEP_INCR);
     barPosL--;
     barPosR--;
   }
