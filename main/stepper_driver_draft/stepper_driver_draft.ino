@@ -43,7 +43,7 @@
   https://lastminuteengineers.com/28byj48-stepper-motor-arduino-tutorial/
 
   SparkFun Easy Driver Basic Demo
-  - we are no longer using this driver, but the pin setup is similar
+  - see pin setup for stp and dir pins
   https://github.com/sparkfun/Easy_Driver
 
  ***************************/
@@ -58,6 +58,7 @@
 #define BALL_RETURN_HEIGHT 11000 //lowest height of bar, where bar will pick up ball
 #define MAX_BAR_TILT 2000        //maximum vertical slope of bar, aka barPosRight - barPosLeft
 #define MAX_SPEED 15
+#define MAX_ACCEL 300
 #define SPEED_MULT 5 //multiply user input value with this number to set desired stepper speed
 #define STEP_INCR 1   //steps taken on each loop() iteration
 #define BALL_RETURN_DELAY 2000 //time to wait until a new ball has rolled onto bar
@@ -77,20 +78,35 @@ int barPosR = FLOOR;
 
 int barTilt = 0;
 
-//setup motor pins
+
+//WITHOUT DRIVER
+
 #define RT_COIL_1A 4
 #define RT_COIL_1B 5
 #define RT_COIL_2A 6
 #define RT_COIL_2B 7
-Stepper motorR = Stepper(STEPS_PER_REV, RT_COIL_1A, RT_COIL_1B, RT_COIL_2A, RT_COIL_2B);
-// AccelStepper accelMotorR(AccelStepper::FULL4WIRE, RT_COIL_1A, RT_COIL_1B, RT_COIL_2A, RT_COIL_2B);
-
 #define LT_COIL_1A 10
 #define LT_COIL_1B 11
 #define LT_COIL_2A 12
 #define LT_COIL_2B 13
+
+Stepper motorR = Stepper(STEPS_PER_REV, RT_COIL_1A, RT_COIL_1B, RT_COIL_2A, RT_COIL_2B);
 Stepper motorL = Stepper(STEPS_PER_REV, LT_COIL_1A, LT_COIL_1B, LT_COIL_2A, LT_COIL_2B);
-// AccelStepper accelMotorL(AccelStepper::FULL4WIRE, LT_COIL_1A, LT_COIL_1B, LT_COIL_2A, LT_COIL_2B);
+
+//we will eventually need to use AccelStepper.h functions, since Stepper.h isn't compatiable with motor driver that
+//have a STEP and DIR pin
+
+ //AccelStepper motorR(AccelStepper::FULL4WIRE, RT_COIL_1A, RT_COIL_1B, RT_COIL_2A, RT_COIL_2B);
+ //AccelStepper motorL(AccelStepper::FULL4WIRE, LT_COIL_1A, LT_COIL_1B, LT_COIL_2A, LT_COIL_2B);
+
+//WITH driver (has step and dir pins)
+//#define STEP_R 4
+//#define DIR_R 5
+//#define STEP_L 6
+//#define STEP_L 7
+// AccelStepper motorR(AccelStepper::DRIVER, STEP_R, DIR_R);
+// AccelStepper motorL(AccelStepper::DRIVER, STEP_R, DIR_R);
+
 
 /***************************************/
 
@@ -119,14 +135,16 @@ int userSpeed = 1;
 
 void setup()
 {
-  // bothSteppers.addStepper(accelMotorR);
-  // bothSteppers.addStepper(accelMotorL);
-  //   accelMotorR.setMaxSpeed(MAX_SPEED);
-  // accelMotorL.setMaxSpeed(MAX_SPEED);
+  // bothSteppers.addStepper(motorR);
+  // bothSteppers.addStepper(motorL);
+//     motorR.setMaxSpeed(MAX_SPEED); //for accelstepper. note speed values are in steps/sec
+//   motorL.setMaxSpeed(MAX_SPEED);
+//  motorR.setAcceleration(MAX_SPEED);
+//  motorL.setAcceleration(MAX_SPEED);
 
+//Stepper.h - note speed values are in rpm
   motorR.setSpeed(MAX_SPEED);
   motorL.setSpeed(MAX_SPEED);
-
 
   //FOR PROTOTYPING ONLY
   pinMode(R_DOWN, INPUT);
@@ -140,10 +158,10 @@ void setup()
   pinMode(R_CEIL, OUTPUT);
   pinMode(MAX_TILT_REACHED, OUTPUT);
 
-  barPosL = 10000;
-  barPosR = 10000;
+  barPosL = FLOOR;
+  barPosR = FLOOR;
 
-  resetBar(); 
+  //resetBar(); 
 
 }
 
@@ -176,11 +194,24 @@ void loop()
     userInputLeft = 0;
   }
 
-  //if button pressed, toggle left and right controls
-  if (digitalRead(SWAP) == LOW && prevSwapReading == HIGH)
-  {
-    swapControls = !swapControls;
-  }
+  //pressing 'swap' button will toggle left and right controls
+//  if (digitalRead(SWAP) == LOW && prevSwapReading == HIGH)
+//  {
+//    swapControls = !swapControls;
+//  }
+
+//pressing 'swap' button will toggle speed
+//from slow (5rpm), med (10rpm), fast (15rpm), then back to slow
+    if (digitalRead(SWAP) == LOW && prevSwapReading == HIGH)
+    {
+      userSpeed++;
+      if(userSpeed > 3) {
+        userSpeed = 1;
+      }
+      motorR.setSpeed(userSpeed * SPEED_MULT); //TODO: if swapControls, swap left and right speed
+      motorL.setSpeed(userSpeed * SPEED_MULT); //only set the speed if user input changes
+    }
+  
   prevSwapReading = digitalRead(SWAP);
    
   moveBar();
@@ -190,7 +221,6 @@ void moveBar() {
   //Move motors one step
   if (swapControls) //special level: SWAP right and left controls
   {
-
     if (userInputRight > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
     { //move LEFT side of bar UP
       motorL.step(STEP_INCR);
@@ -215,28 +245,26 @@ void moveBar() {
   }
   else //normal controls
   {
-//    motorR.setSpeed(userInputRight * SPEED_MULT);
-//    motorL.setSpeed(userInputLeft * SPEED_MULT);
 
     if (userInputRight > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
     { //move right side of bar UP
-      motorR.step(STEP_INCR);
-      barPosR--;
+        motorR.step(STEP_INCR); 
+        barPosR--;
     }
     else if (userInputRight < 0 && barPosR < FLOOR && barTilt > -MAX_BAR_TILT)
     { //move right side of bar DOWN
-      motorR.step(-STEP_INCR);
+        motorR.step(-STEP_INCR); 
       barPosR++;
     }
 
     if (userInputLeft > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
     { //move left side of bar UP
-      motorL.step(STEP_INCR);
+        motorL.step(STEP_INCR); 
       barPosL--;
     }
     else if (userInputLeft < 0 && barPosL < FLOOR && barTilt < MAX_BAR_TILT)
     { //move left side of bar DOWN
-      motorL.step(-STEP_INCR);
+        motorL.step(-STEP_INCR); 
       barPosL++;
     }
   }
