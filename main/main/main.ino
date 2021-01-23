@@ -24,7 +24,7 @@ Gameplay: Alex and Ginny
 - determine inputs and outputs for each function
 - fix playingGame bool 
 
-Code to trigger "start the game": Natalia
+Code to trigger "start the game": Natalia [done]
 - if person waves their hands they start the game
 - choose a part? IR sensor?
 
@@ -83,7 +83,7 @@ void waitToStartGame() {
 
   //player places hand over one of the sensors to start
   //has to be high above sensor
-  if (!get_left_user_input || !get_right_user_input) {
+  if (get_left_user_input > 1 || !get_right_user_input > 1) {
     //start the game
     playingGame = true;
     resetGame();
