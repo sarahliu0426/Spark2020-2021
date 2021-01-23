@@ -105,7 +105,6 @@ void loop() {
   int right_sensor_read = get_right_user_input();
   int left_sensor_read = get_left_user_input();
   
-  Serial.print(right_sensor_read);
-  Serial.print("\n");
-  Serial.print(left_sensor_read);
+  //Serial.print(right_sensor_read);
+  //Serial.print(left_sensor_read);
 }
