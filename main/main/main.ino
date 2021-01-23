@@ -295,13 +295,15 @@ int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
                           { 1,1,1,0,0,1,1 }};   // 9
                          
 void updateScore() {
+  // higher score given for higher difficulty level and less time spent
   targetDifficulty += 1;
 
-  if (targetDifficult <= 4 && (50 -(finishTime - startTime)/600) > 0) { // if target difficulty levels are used (first 4 are easy)
+  if (targetDifficult <= 4 && (50 -(finishTime - startTime)/600) > 0) { 
+    // if target difficulty levels are used (first 4 are easy)
     score += int(50 - (finishTime - startTime)/600); // user gets 0 if they spend more than 30 secs 
     // (50) can be modified depending on how many digits can be displayed
   }
-  else if (targetDifficult > 4 && (50 -(finishTime - startTime)/2400) > 0) {
+  else {
     score += int(50 - (finishTime - startTime)/2400); // user gets 0 if they spend more than 120 secs 
   }
 
@@ -314,7 +316,7 @@ void displayScore() {
   int firstDigit = score/100;
   int secondDigit = (score-firstDigit)/10;
   int thirdDigit = (score-firstDigit-secondDigit);
-
+  
   //update digits on the seven seg display 
 }
 /************ END OF OUTPUT FUNCTIONS ***********/
