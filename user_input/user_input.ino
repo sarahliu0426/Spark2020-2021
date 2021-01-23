@@ -61,24 +61,28 @@ float sample_distance_left() {
   return current_distance;
 }
 //1 is up  is down
-bool get_left_user_input(){
+int get_left_user_input(){
   left_sensor.addValue(sample_distance_left());
   //Serial.print("Left Distance: ");
   //Serial.println(left_sensor.getAverage());
-  if (left_sensor.getAverage() > 15) {
-     return 1;
+  if (left_sensor.getAverage() > 25) {
+     return 3;
+  } else if (left_sensor.getAverage() > 15) {
+    return 2;
   }
-  return 0;
+  return 1;
 }
 
-bool get_right_user_input( {
+int get_right_user_input() {
   right_sensor.addValue(sample_distance_right());
   //Serial.print("\nRight Distance: ");
   //Serial.println(right_sensor.getAverage());
-  if (right_sensor.getAverage() > 15) {
-     return 1;
+  if (right_sensor.getAverage() > 25) {
+     return 3;
+  } else if (right_sensor.getAverage() > 15) {
+    return 2;
   }
-  return 0;
+  return 1;
 }
 
 //setup to be run once
@@ -97,5 +101,9 @@ void setup() {
 //to be repeated
 void loop() {
   //just for testing purposes
-  get_user_input();
+  int right_sensor_read = get_right_user_input();
+  int left_sensor_read = get_left_user_input();
+  
+  Serial.print(right_sensor_read);
+  Serial.print(left_sensor_read);
 }
