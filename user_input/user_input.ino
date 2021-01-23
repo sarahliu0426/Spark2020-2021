@@ -60,11 +60,12 @@ float sample_distance_left() {
 
   return current_distance;
 }
-//1 is up  is down
+
 int get_left_user_input(){
   left_sensor.addValue(sample_distance_left());
   //Serial.print("Left Distance: ");
   //Serial.println(left_sensor.getAverage());
+  //Serial.print("\n");
   if (left_sensor.getAverage() > 25) {
      return 3;
   } else if (left_sensor.getAverage() > 15) {
@@ -105,5 +106,6 @@ void loop() {
   int left_sensor_read = get_left_user_input();
   
   Serial.print(right_sensor_read);
+  Serial.print("\n");
   Serial.print(left_sensor_read);
 }
