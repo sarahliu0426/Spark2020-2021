@@ -111,8 +111,9 @@ void updateTarget() {
   
   targetPin += targetIncr;
 
-  if(targetPin > NUMTARGETHOLES) 
+  if(targetPin > NUMTARGETHOLES){
     targetPin = targetIncr;
+  }
   
   updateLights(oldTarget, targetPin);
 }
@@ -136,6 +137,7 @@ void resetGame(){
     score = 0;
     finishTime = millis();
     updateScore();
+    displayScore();
     digitalWrite(targetPin, LOW);
     targetPin =0;
     digitalWrite(targetPin, HIGH);
@@ -258,6 +260,7 @@ void ballEntry() {
     updateTarget();
 
     updateScore();
+    displayScore();
     
   } else if (bottomBroken) { //ball fell in bad hole  
     playingGame = false;
@@ -279,7 +282,7 @@ void updateLights(int lastHole, int newHole){
 //we can put this array somewhere else
 //for the seven seg display
 //we should probably wait until we know which display
-//we're using to code this u
+//we're using to code this
 int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
                           { 0,1,1,0,0,0,0 },    // 1
                           { 1,1,0,1,1,0,1 },    // 2
@@ -292,22 +295,28 @@ int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
                           { 1,1,1,0,0,1,1 }};   // 9
                          
 void updateScore() {
-  targetDifficulty += 1
+  targetDifficulty += 1;
 
-  if (targetDifficult <= 4 && (50 -(finishtime - startTime)/600) > 0) { // if target difficulty levels are used (first 4 are easy)
-    
-    score += int(50 - (finishtime - startTime)/600) // user gets 0 if they spend more than 30 secs 
+  if (targetDifficult <= 4 && (50 -(finishTime - startTime)/600) > 0) { // if target difficulty levels are used (first 4 are easy)
+    score += int(50 - (finishTime - startTime)/600); // user gets 0 if they spend more than 30 secs 
     // (50) can be modified depending on how many digits can be displayed
   }
-  else if (targetDifficult > 4 && (50 -(finishtime - startTime)/2400) > 0) {
-    score += int(50 - (finishtime - startTime)/2400) // user gets 0 if they spend more than 120 secs 
+  else if (targetDifficult > 4 && (50 -(finishTime - startTime)/2400) > 0) {
+    score += int(50 - (finishTime - startTime)/2400); // user gets 0 if they spend more than 120 secs 
   }
 
-  return score
+  return score;
   
   // function could be modified such that score given increases depending on difficulty
 }
 
+void displayScore() {
+  int firstDigit = score/100;
+  int secondDigit = (score-firstDigit)/10;
+  int thirdDigit = (score-firstDigit-secondDigit);
+
+  //update digits on the seven seg display 
+}
 /************ END OF OUTPUT FUNCTIONS ***********/
 
 void setup() {
@@ -349,14 +358,14 @@ void loop() {
     //distance = smooth_distance(20);
     //Serial.print("Distance: ");
     //Serial.println(distance);
-
-    finishTime = millis(); //might not need here depending on when updateTarget is called. 
+ 
     moveBar();
     ballEntry();
-    checkIfGameOver();
-    targetBroken=beamBroken(targetPin);
-    bottomBroken=beamBroken(BOTTOMPIN);
-
-
+    //checkIfGameOver();
+    //targetBroken=beamBroken(targetPin);
+    //bottomBroken=beamBroken(BOTTOMPIN);
+    if (beamBroken(BOTTOMPIN) && !beamBroken(targetPin)) {
+      break;
+    }
   }
 }
