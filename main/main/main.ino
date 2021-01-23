@@ -1,4 +1,28 @@
 /* TO DO
+
+Natalia and Ginny:
+Add all-time high score functionality
+- keep updating high score if player keeps beating it
+- call 7 seg display code
+
+- put regular score function on the 7 segment displays
+- 1 set of 7 segment displays
+
+Write ball return function to release special ball
+
+
+Design "hand sanitizer" function to start/quit game
+- ask mech where they want to put it
+- add a way to "quit" the game
+
+Powerdowns:
+Choose a new level based on jan 22's mtg mins chart
+holes 0-4: normal, 5 onwards is random
+
+Write powerdown function to increase speed permanently
+
+Program LEDS for powerdowns
+
 Bar movement mechanism:
 - control motors to move bar: Janelle and Matt
   - program motor drivers for the stepper motors
@@ -94,13 +118,6 @@ void waitToStartGame() {
 
 }
 
-void checkIfGameOver () {
-  //check if user "won" or "lost"
-  //if user hasn't moved for a while, we assume they walked away and end the game
-  Serial.println("check if game over");
-}
-
-
 void updateTarget() {
   
   randomSeed(analogRead(0));
@@ -132,14 +149,17 @@ void resetBall() {
 }
 
 void resetGame(){
+    
+    score = 0;
+    targetPin = 0;
+    targetDifficulty = 0;
+    targetBroken = false;
+    bottomBroken = false;
     resetBar();
     resetBall();
-    score = 0;
     finishTime = millis();
     updateScore();
     displayScore();
-    digitalWrite(targetPin, LOW);
-    targetPin =0;
     digitalWrite(targetPin, HIGH);
 }
 
@@ -205,6 +225,7 @@ void moveBar() {
 
 }
 /************ BALL DETECTION FUNCTIONS *********/
+
 bool beamBroken(int target)
 {
 
@@ -247,7 +268,11 @@ bool beamBroken(int target)
   return beamBroken;
 }
 
+
 void ballEntry() {
+
+  targetBroken=beamBroken(targetPin);
+  bottomBroken=beamBroken(BOTTOMPIN);
 
   int fellIntoTargetHole = true; //TODO: change to false
   int fellIntoBadHole = false; 
@@ -307,7 +332,11 @@ void updateScore() {
     score += int(50 - (finishTime - startTime)/2400); // user gets 0 if they spend more than 120 secs 
   }
 
-  return score;
+  //TODO: call the function that will update the 7 seg displays
+
+  //TODO: if your score is greater than the high score, update the high score
+
+  return score
   
   // function could be modified such that score given increases depending on difficulty
 }
@@ -350,8 +379,7 @@ void setup() {
 }
 
 void loop() {
-  
-  targetPin =0;
+
   resetGame(); //sets bar, ball, score, lights for initial game start
   waitToStartGame(); //wait for user to start game and set PlayingGame = true
 
@@ -360,14 +388,15 @@ void loop() {
     //distance = smooth_distance(20);
     //Serial.print("Distance: ");
     //Serial.println(distance);
- 
+
+    finishTime = millis(); //might not need here depending on when updateTarget is called. 
+
+    get_left_user_input();
+    get_right_user_input();
     moveBar();
-    ballEntry();
-    //checkIfGameOver();
-    //targetBroken=beamBroken(targetPin);
-    //bottomBroken=beamBroken(BOTTOMPIN);
-    if (beamBroken(BOTTOMPIN) && !beamBroken(targetPin)) {
-      break;
-    }
+    ballEntry(); 
+
+
+
   }
 }
