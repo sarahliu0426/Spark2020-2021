@@ -139,6 +139,7 @@ void updateTarget() {
   }
  
   updateLights(oldTarget, targetPin);
+   startTime = millis();
 }
 
 void resetBar() {
@@ -151,7 +152,7 @@ void resetBall() {
   //wait until ball is ready to roll onto the bar
   //put the ball back onto the bar
   Serial.println("reset ball");
-  startTime = millis();
+ 
 }
 
 void resetGame(){
