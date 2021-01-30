@@ -2,19 +2,16 @@
 
 // defines pins numbers, doesn't have to be 9 and 10
 //any d i/o works fine
-const int trigPin1 = 10;
-const int echoPin1 = 9;
+int trigPin1 = 10;
+int echoPin1 = 9;
 
 //corresponds to the RIGHT sensor
-const int trigPin2 = 8;
-const int echoPin2 = 7;
+int trigPin2 = 8;
+int echoPin2 = 7;
 
 RunningAverage left_sensor(20);
 RunningAverage right_sensor(20);
 
-//switched = 0 => not switched
-//switched = 1 => switched
-int switched = 0;
 float sample_distance_right() {
   int current_duration;
   int current_distance;

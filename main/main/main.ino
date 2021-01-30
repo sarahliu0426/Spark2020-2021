@@ -383,7 +383,23 @@ void setup() {
 
 
 
-//NatatiasFUNCTION GOES HERE
+int power_down_reverse_control (bool switch) {
+  if (switch) {
+    //left -> now right
+    int trigPin1 = 8;
+    int echoPin1 = 7;
+    //right -> now left
+    int trigPin2 = 10;
+    int echoPin2 = 9;
+  } else {
+    //left (normal)
+    int trigPin1 = 10;
+    int echoPin1 = 9;
+    //right (normal)
+    int trigPin2 = 8;
+    int echoPin2 = 7;
+  }
+}
 
 
 
