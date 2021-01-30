@@ -11,17 +11,17 @@ Add all-time high score functionality (Ginny)
 Write ball return function to release special ball
 
 
-Design "hand sanitizer" function to start/quit game
+Design "hand sanitizer" function to start/quit game [done]
 - ask mech where they want to put it
 - add a way to "quit" the game
 
-Powerdowns (DONE but with Question): 
+Powerdowns (ALEX AND NATALIA): 
 Choose a new level based on jan 22's mtg mins chart
 -Natalia = Bar reversal [done]
 -Natalia = increase speed [done]
 holes 0-4: normal, 5 onwards is random
-QUESTION: mechanism for special ball???
 
+Write powerdown function to increase speed permanently
 
 Program LEDS for powerdowns
 
@@ -37,7 +37,8 @@ Bar movement mechanism:
 Detect if ball fell into hole: Natalia
 - assign pins for each sensor and check sensors for each hole in the function ballEntry()
 
-
+Select new hole as a target hole: Alex (DONE)
+- discuss option: for first 4 holes, choose easy ones, then choose random holes for the rest of the game
 
 Ball Reset: Matt and Janelle
 - Check with mech: how many balls? make sure ball is at bottom before loading ball
@@ -117,7 +118,6 @@ void waitToStartGame() {
     //start the game
     playingGame = true;
     resetGame();
-    
   }
   //otherwise do nothing
   //Serial.println("wait to start the game. pretend someone starts playing game");
@@ -290,12 +290,9 @@ void ballEntry() {
     //updateHighScore();
     updateTarget();
 
-    //scoring functions
     updateScore();
     displayScore();
-
-    powerdown_handler(); //toggle powerdowns 
-
+    
   } else if (bottomBroken) { //ball fell in bad hole  
     playingGame = false;
     resetGame();
@@ -388,31 +385,26 @@ void setup() {
 }
 /************ START OF POWER DOWN FUNCTIONS ***********/
 void powerdown_handler(){
-  //if level is lower than or equal to 5 -> no powerdowns 
   if(level <=5){
     power_down_reverse_control(false);
     power_down_increase_speed(false);
-  }else{ //after level five -> turn on random powerdowns 
-    int powerdown = (int)random(4); //random number between 0 and 3 inclusive 
+  }else{
+    int powerdown = (int)random(0,2);
     
     switch(powerdown){
-      case 0: //reverse the bar control  
+      case 0:
         power_down_reverse_control(true);
         power_down_increase_speed(false);
         break;
-      case 1: //increase bar speed 
+      case 1:
         power_down_reverse_control(false);
         power_down_increase_speed(true);
         break;
-      case 2: //increase bar speed and reverse controls 
+      case 2:
         power_down_reverse_control(true);
         power_down_increase_speed(true);
         break;
-     case 3: //no powerdowns
-        power_down_reverse_control(false);
-        power_down_increase_speed(true);
-        break;
-      default: //no powerdowns
+      default:
         power_down_reverse_control(false);
         power_down_increase_speed(false);
         break;
@@ -466,8 +458,10 @@ void loop() {
     get_right_user_input();
     moveBar();
     ballEntry(); 
-   
 
+      
+  
 
-  }
+  } 
+  
 }
