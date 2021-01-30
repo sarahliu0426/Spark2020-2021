@@ -88,7 +88,7 @@ int distance;
 bool playingGame = true; //true if someone is playing, false if game over
 
 int score = 0;
-int targetDifficulty = 0
+int targetDifficulty = 0;
 int targetPin = 0;
 bool targetBroken = false;
 bool bottomBroken = false;
@@ -383,8 +383,8 @@ void setup() {
 
 
 
-int power_down_reverse_control (bool switch) {
-  if (switch) {
+int power_down_reverse_control (bool opposite) {
+  if (opposite) {
     //left -> now right
     int trigPin1 = 8;
     int echoPin1 = 7;
