@@ -389,16 +389,25 @@ void powerdown_handler(){
     power_down_reverse_control(false);
     power_down_increase_speed(false);
   }else{
-    int powerdown = (int)random(0,1);
+    int powerdown = (int)random(0,2);
     
     switch(powerdown){
-      case (0):
+      case 0:
         power_down_reverse_control(true);
         power_down_increase_speed(false);
         break;
-      case (1):
+      case 1:
         power_down_reverse_control(false);
         power_down_increase_speed(true);
+        break;
+      case 2:
+        power_down_reverse_control(true);
+        power_down_increase_speed(true);
+        break;
+      default:
+        power_down_reverse_control(false);
+        power_down_increase_speed(false);
+        break;
     }
   }
 }
