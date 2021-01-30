@@ -66,6 +66,9 @@ int get_left_user_input(){
   //Serial.print("Left Distance: ");
   //Serial.println(left_sensor.getAverage());
   //Serial.print("\n");
+  if (sped_up && left_sensor.getAverage() > 15) {
+    return 3;
+  }
   if (left_sensor.getAverage() > 25) {
      return 3;
   } else if (left_sensor.getAverage() > 15) {
@@ -78,6 +81,9 @@ int get_right_user_input() {
   right_sensor.addValue(sample_distance_right());
   //Serial.print("\nRight Distance: ");
   //Serial.println(right_sensor.getAverage());
+  if (sped_up && right_sensor.getAverage() > 15) {
+    return 3;
+  }
   if (right_sensor.getAverage() > 25) {
      return 3;
   } else if (right_sensor.getAverage() > 15) {

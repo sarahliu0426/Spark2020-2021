@@ -100,6 +100,9 @@ int startTime = 0; //time when the new hole is assigned
 unsigned long finishTime;  //time when the ball drops into target hole
 
 int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
+
+//global variables for power downs
+bool sped_up = false;
 /************END OF GLOBAL VARIABLES**********************/
 
 
@@ -406,7 +409,7 @@ void power_down_increase_speed(bool on){
 
 
 
-int power_down_reverse_control (bool opposite) {
+void power_down_reverse_control (bool opposite) {
   if (opposite) {
     //left -> now right
     int trigPin1 = 8;
@@ -424,6 +427,14 @@ int power_down_reverse_control (bool opposite) {
   }
 }
 
+
+void power_down_increase_speed(bool speed_control) {
+  //if speed_control is true, increase speed
+  //if false leave it alone
+
+  //sped_up is global in user_input
+  sped_up = speed_control;
+}
 
 
 /************ END OF POWER DOWN  FUNCTIONS ***********/
