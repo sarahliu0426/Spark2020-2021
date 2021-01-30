@@ -289,7 +289,7 @@ void ballEntry() {
 
     //updateHighScore();
     updateTarget();
-
+    finishTime = millis(); 
     updateScore();
     displayScore();
     
@@ -328,7 +328,7 @@ int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
 void updateScore() {
   // higher score given for higher difficulty level and less time spent
   targetDifficulty += 1;
-  finishTime = millis(); 
+  
 
   if (targetDifficult <= 4 && (50 -(finishTime - startTime)/600) > 0) { 
     // if target difficulty levels are used (first 4 are easy)
