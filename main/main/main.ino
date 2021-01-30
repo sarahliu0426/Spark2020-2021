@@ -290,9 +290,12 @@ void ballEntry() {
     //updateHighScore();
     updateTarget();
 
+    //scoring functions
     updateScore();
     displayScore();
-    
+
+    powerdown_handler(); //toggle powerdowns 
+
   } else if (bottomBroken) { //ball fell in bad hole  
     playingGame = false;
     resetGame();
@@ -385,26 +388,27 @@ void setup() {
 }
 /************ START OF POWER DOWN FUNCTIONS ***********/
 void powerdown_handler(){
+  //if level is lower than or equal to 5 -> no powerdowns 
   if(level <=5){
     power_down_reverse_control(false);
     power_down_increase_speed(false);
-  }else{
+  }else{ //after level five -> turn on random powerdowns 
     int powerdown = (int)random(0,2);
     
     switch(powerdown){
-      case 0:
+      case 0: //reverse the bar control  
         power_down_reverse_control(true);
         power_down_increase_speed(false);
         break;
-      case 1:
+      case 1: //increase bar speed 
         power_down_reverse_control(false);
         power_down_increase_speed(true);
         break;
-      case 2:
+      case 2: //increase bar speed and reverse controls 
         power_down_reverse_control(true);
         power_down_increase_speed(true);
         break;
-      default:
+      default: //no powerdowns
         power_down_reverse_control(false);
         power_down_increase_speed(false);
         break;
@@ -458,7 +462,7 @@ void loop() {
     get_right_user_input();
     moveBar();
     ballEntry(); 
-
+   
 
 
   }
