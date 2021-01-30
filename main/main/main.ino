@@ -385,8 +385,18 @@ void powerdown_handler(){
   if(level <=5){
     power_down_reverse_control(false);
     power_down_increase_speed(false);
-  }else if(level<=10){
+  }else{
+    int powerdown = (int)random(0,1);
     
+    switch(powerdown){
+      case (0):
+        power_down_reverse_control(true);
+        power_down_increase_speed(false);
+        break;
+      case (1):
+        power_down_reverse_control(false);
+        power_down_increase_speed(true);
+    }
   }
 }
 
