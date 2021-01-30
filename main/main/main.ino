@@ -84,6 +84,8 @@ long duration;
 // distance between sensor and object
 int distance;
 
+//used to turn on powerdowns
+int level; 
 
 bool playingGame = true; //true if someone is playing, false if game over
 
@@ -120,7 +122,7 @@ void waitToStartGame() {
 }
 
 void updateTarget() {
-  
+  level++; 
   randomSeed(analogRead(0));
 
   int targetIncr = (int)random(0,3);
@@ -132,7 +134,7 @@ void updateTarget() {
   if(targetPin > NUMTARGETHOLES){
     targetPin = targetIncr;
   }
-  
+ 
   updateLights(oldTarget, targetPin);
 }
 
@@ -150,7 +152,7 @@ void resetBall() {
 }
 
 void resetGame(){
-    
+    level =0;
     score = 0;
     targetPin = 0;
     targetDifficulty = 0;
@@ -379,7 +381,18 @@ void setup() {
   resetBar();
 }
 /************ START OF POWER DOWN FUNCTIONS ***********/
+void powerdown_handler(){
+  if(level <=5){
+    power_down_reverse_control(false);
+    power_down_increase_speed(false);
+  }else if(level<=10){
+    
+  }
+}
 
+void power_down_increase_speed(bool on){
+
+}
 
 
 
