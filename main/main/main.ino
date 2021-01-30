@@ -151,7 +151,7 @@ void resetBall() {
   //wait until ball is ready to roll onto the bar
   //put the ball back onto the bar
   Serial.println("reset ball");
-  startTime = finishTime
+  startTime = millis();
 }
 
 void resetGame(){
@@ -328,6 +328,7 @@ int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
 void updateScore() {
   // higher score given for higher difficulty level and less time spent
   targetDifficulty += 1;
+  finishTime = millis(); 
 
   if (targetDifficult <= 4 && (50 -(finishTime - startTime)/600) > 0) { 
     // if target difficulty levels are used (first 4 are easy)
@@ -452,8 +453,7 @@ void loop() {
     //Serial.print("Distance: ");
     //Serial.println(distance);
 
-    finishTime = millis(); //might not need here depending on when updateTarget is called. 
-
+    
     get_left_user_input();
     get_right_user_input();
     moveBar();
