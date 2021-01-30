@@ -17,7 +17,8 @@ Design "hand sanitizer" function to start/quit game
 
 Powerdowns (DONE but with Question): 
 Choose a new level based on jan 22's mtg mins chart
--Natlia = Bar reversal
+-Natalia = Bar reversal [done]
+-Natalia = increase speed [done]
 holes 0-4: normal, 5 onwards is random
 QUESTION: mechanism for special ball???
 
