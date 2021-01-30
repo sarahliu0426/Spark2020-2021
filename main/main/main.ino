@@ -379,6 +379,14 @@ void setup() {
   resetBar();
 }
 /************ START OF POWER DOWN FUNCTIONS ***********/
+
+
+
+
+//NatatiasFUNCTION GOES HERE
+
+
+
 /************ END OF POWER DOWN  FUNCTIONS ***********/
 void loop() {
 
