@@ -378,7 +378,8 @@ void setup() {
 
   resetBar();
 }
-
+/************ START OF POWER DOWN FUNCTIONS ***********/
+/************ END OF POWER DOWN  FUNCTIONS ***********/
 void loop() {
 
   resetGame(); //sets bar, ball, score, lights for initial game start
