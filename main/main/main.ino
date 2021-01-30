@@ -1,5 +1,5 @@
 /* TO DO
-
+ALEX: Use timer to idle game after 10 minutes (ie set playingGame = false)
 Natalia and Ginny:
 Add all-time high score functionality (Ginny)
 - keep updating high score if player keeps beating it
