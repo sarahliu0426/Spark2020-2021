@@ -15,12 +15,12 @@ Design "hand sanitizer" function to start/quit game
 - ask mech where they want to put it
 - add a way to "quit" the game
 
-Powerdowns (ALEX AND NATALIA): 
+Powerdowns (DONE but with Question): 
 Choose a new level based on jan 22's mtg mins chart
 -Natlia = Bar reversal
 holes 0-4: normal, 5 onwards is random
+QUESTION: mechanism for special ball???
 
-Write powerdown function to increase speed permanently
 
 Program LEDS for powerdowns
 
@@ -36,8 +36,7 @@ Bar movement mechanism:
 Detect if ball fell into hole: Natalia
 - assign pins for each sensor and check sensors for each hole in the function ballEntry()
 
-Select new hole as a target hole: Alex (DONE)
-- discuss option: for first 4 holes, choose easy ones, then choose random holes for the rest of the game
+
 
 Ball Reset: Matt and Janelle
 - Check with mech: how many balls? make sure ball is at bottom before loading ball
@@ -393,7 +392,7 @@ void powerdown_handler(){
     power_down_reverse_control(false);
     power_down_increase_speed(false);
   }else{ //after level five -> turn on random powerdowns 
-    int powerdown = (int)random(0,2);
+    int powerdown = (int)random(4); //random number between 0 and 3 inclusive 
     
     switch(powerdown){
       case 0: //reverse the bar control  
@@ -406,6 +405,10 @@ void powerdown_handler(){
         break;
       case 2: //increase bar speed and reverse controls 
         power_down_reverse_control(true);
+        power_down_increase_speed(true);
+        break;
+     case 3: //no powerdowns
+        power_down_reverse_control(false);
         power_down_increase_speed(true);
         break;
       default: //no powerdowns
