@@ -1,11 +1,11 @@
 /* TO DO
 
 Natalia and Ginny:
-Add all-time high score functionality
+Add all-time high score functionality (Ginny)
 - keep updating high score if player keeps beating it
 - call 7 seg display code
 
-- put regular score function on the 7 segment displays
+- put regular score function on the 7 segment displays (GINNY)
 - 1 set of 7 segment displays
 
 Write ball return function to release special ball
@@ -15,8 +15,9 @@ Design "hand sanitizer" function to start/quit game
 - ask mech where they want to put it
 - add a way to "quit" the game
 
-Powerdowns:
+Powerdowns (ALEX AND NATALIA): 
 Choose a new level based on jan 22's mtg mins chart
+-Natlia = Bar reversal
 holes 0-4: normal, 5 onwards is random
 
 Write powerdown function to increase speed permanently
