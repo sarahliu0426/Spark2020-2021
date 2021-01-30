@@ -412,12 +412,6 @@ void powerdown_handler(){
   }
 }
 
-void power_down_increase_speed(bool on){
-
-}
-
-
-
 void power_down_reverse_control (bool opposite) {
   if (opposite) {
     //left -> now right
