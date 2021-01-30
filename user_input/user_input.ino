@@ -12,6 +12,9 @@ const int echoPin2 = 7;
 RunningAverage left_sensor(20);
 RunningAverage right_sensor(20);
 
+//switched = 0 => not switched
+//switched = 1 => switched
+int switched = 0;
 float sample_distance_right() {
   int current_duration;
   int current_distance;
