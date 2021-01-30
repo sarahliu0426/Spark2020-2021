@@ -105,7 +105,7 @@ Stepper motorL = Stepper(STEPS_PER_REV, LT_COIL_1A, LT_COIL_1B, LT_COIL_2A, LT_C
 //#define STEP_L 6
 //#define STEP_L 7
 // AccelStepper motorR(AccelStepper::DRIVER, STEP_R, DIR_R);
-// AccelStepper motorL(AccelStepper::DRIVER, STEP_R, DIR_R);
+// AccelStepper motorL(AccelStepper::DRIVER, STEP_L, DIR_L);
 
 
 /***************************************/
