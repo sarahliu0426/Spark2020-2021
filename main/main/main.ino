@@ -20,7 +20,7 @@ Choose a new level based on jan 22's mtg mins chart
 -Natlia = Bar reversal
 holes 0-4: normal, 5 onwards is random
 
-Write powerdown function to increase speed permanently
+Write powerdown function to increase speed permanently [done]
 
 Program LEDS for powerdowns
 
