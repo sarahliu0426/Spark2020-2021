@@ -1,5 +1,5 @@
 /* TO DO
-ALEX: Use timer to idle game after 10 minutes (ie set playingGame = false)
+
 Natalia and Ginny:
 Add all-time high score functionality (Ginny)
 - keep updating high score if player keeps beating it
@@ -11,14 +11,13 @@ Add all-time high score functionality (Ginny)
 Write ball return function to release special ball
 
 
-Design "hand sanitizer" function to start/quit game [done]
+Design "hand sanitizer" function to start/quit game
 - ask mech where they want to put it
 - add a way to "quit" the game
 
 Powerdowns (ALEX AND NATALIA): 
 Choose a new level based on jan 22's mtg mins chart
--Natalia = Bar reversal [done]
--Natalia = increase speed [done]
+-Natlia = Bar reversal
 holes 0-4: normal, 5 onwards is random
 
 Write powerdown function to increase speed permanently
@@ -74,7 +73,7 @@ Done:
 const int echoPin = 9;
 const int trigPin = 10;
 #define NUMTARGETS 30
-
+#include "SevSeg.h"
 /************END OF CONSTANTS*********************/
 
 /************GLOBAL VARIABLES**********************/
@@ -85,13 +84,13 @@ long duration;
 // distance between sensor and object
 int distance;
 
-//used to turn on powerdowns
-int level; 
 
 bool playingGame = true; //true if someone is playing, false if game over
 
 int score = 0;
-int targetDifficulty = 0;
+int targetDifficulty = 0
+int highscore = 0;
+
 int targetPin = 0;
 bool targetBroken = false;
 bool bottomBroken = false;
@@ -101,11 +100,11 @@ int startTime = 0; //time when the new hole is assigned
 unsigned long finishTime;  //time when the ball drops into target hole
 
 int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
-
-//global variables for power downs
-bool sped_up = false;
 /************END OF GLOBAL VARIABLES**********************/
 
+SevSeg sevseg1;
+SevSeg sevseg2;
+SevSeg sevseg3;
 
 void waitToStartGame() {
   //wait and do nothing until someone presses "start"
@@ -118,6 +117,7 @@ void waitToStartGame() {
     //start the game
     playingGame = true;
     resetGame();
+    
   }
   //otherwise do nothing
   //Serial.println("wait to start the game. pretend someone starts playing game");
@@ -125,7 +125,7 @@ void waitToStartGame() {
 }
 
 void updateTarget() {
-  level++; 
+  
   randomSeed(analogRead(0));
 
   int targetIncr = (int)random(0,3);
@@ -137,9 +137,8 @@ void updateTarget() {
   if(targetPin > NUMTARGETHOLES){
     targetPin = targetIncr;
   }
- 
+  
   updateLights(oldTarget, targetPin);
-   startTime = millis();
 }
 
 void resetBar() {
@@ -152,11 +151,11 @@ void resetBall() {
   //wait until ball is ready to roll onto the bar
   //put the ball back onto the bar
   Serial.println("reset ball");
- 
+  startTime = finishTime
 }
 
 void resetGame(){
-    level =0;
+    
     score = 0;
     targetPin = 0;
     targetDifficulty = 0;
@@ -290,7 +289,7 @@ void ballEntry() {
 
     //updateHighScore();
     updateTarget();
-    finishTime = millis(); 
+
     updateScore();
     displayScore();
     
@@ -327,34 +326,45 @@ int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
                           { 1,1,1,0,0,1,1 }};   // 9
                          
 void updateScore() {
-  // higher score given for higher difficulty level and less time spent
-  targetDifficulty += 1;
-  
+    targetDifficulty += 1; // no powerups in the first 4 rounds
 
-  if (targetDifficult <= 4 && (50 -(finishTime - startTime)/600) > 0) { 
-    // if target difficulty levels are used (first 4 are easy)
-    score += int(50 - (finishTime - startTime)/600); // user gets 0 if they spend more than 30 secs 
-    // (50) can be modified depending on how many digits can be displayed
+  if (targetDifficult <= 4 && (50 - (finishTime - startTime)/600) > 0) { 
+    score += int(50 - (finishTime - startTime)/600); 
+    // user gets 0 if they spend more than 30 secs 
+
   }
   else {
-    score += int(50 - (finishTime - startTime)/2400); // user gets 0 if they spend more than 120 secs 
+    score += int(50 - (finishTime - startTime)/2400); 
+    // user gets 0 if they spend more than 120 secs 
   }
-
-  //TODO: call the function that will update the 7 seg displays
-
-  //TODO: if your score is greater than the high score, update the high score
-
-  return score
-  
-  // function could be modified such that score given increases depending on difficulty
+  delay(1000);
+  displayScore();
+  sethighScore();
 }
 
 void displayScore() {
   int firstDigit = score/100;
   int secondDigit = (score-firstDigit)/10;
   int thirdDigit = (score-firstDigit-secondDigit);
+
+  sevseg1.setNumber(firstDigit);
+  sevseg1.refreshDisplay(); 
+  sevseg2.setNumber(secondDigit);
+  sevseg2.refreshDisplay(); 
+  sevseg3.setNumber(thirdDigit);
+  sevseg3.refreshDisplay(); 
+  
   
   //update digits on the seven seg display 
+}
+
+void sethighScore() {
+  if (score > highscore) {
+    highscore = score;
+    int highFirst = high/100;
+    int highSecond = (highscore-highFirst)/10;
+    int highThird = (highscore-highFirst-highSecond);
+  }
 }
 /************ END OF OUTPUT FUNCTIONS ***********/
 
@@ -383,63 +393,38 @@ void setup() {
   //initialize user input devices
   //initialize displays
 
+  //set up seven seg display x3
+  byte numDigits = 1;
+  byte digitPins[] = {};
+  byte segmentPins1[] = {6, 5, 2, 3, 4, 7, 8, 9};
+  byte segmentPins2[] = {6, 5, 2, 3, 4, 7, 8, 9};
+  byte segmentPins3[] = {6, 5, 2, 3, 4, 7, 8, 9};
+  bool resistorsOnSegments = true;
+
+  byte hardwareConfig = COMMON_CATHODE; 
+  sevseg1.begin(hardwareConfig, numDigits, digitPins, segmentPins1, resistorsOnSegments);
+  sevseg1.setBrightness(90);
+  sevseg2.begin(hardwareConfig, numDigits, digitPins, segmentPins2, resistorsOnSegments);
+  sevseg2.setBrightness(90);
+  sevseg3.begin(hardwareConfig, numDigits, digitPins, segmentPins3, resistorsOnSegments);
+  sevseg3.setBrightness(90);
+  
+  sevseg1.setNumber(0);
+  sevseg1.refreshDisplay(); 
+  sevseg2.setNumber(0);
+  sevseg2.refreshDisplay(); 
+  sevseg3.setNumber(0);
+  sevseg3.refreshDisplay(); 
+  
   resetBar();
 }
 /************ START OF POWER DOWN FUNCTIONS ***********/
-void powerdown_handler(){
-  if(level <=5){
-    power_down_reverse_control(false);
-    power_down_increase_speed(false);
-  }else{
-    int powerdown = (int)random(0,2);
-    
-    switch(powerdown){
-      case 0:
-        power_down_reverse_control(true);
-        power_down_increase_speed(false);
-        break;
-      case 1:
-        power_down_reverse_control(false);
-        power_down_increase_speed(true);
-        break;
-      case 2:
-        power_down_reverse_control(true);
-        power_down_increase_speed(true);
-        break;
-      default:
-        power_down_reverse_control(false);
-        power_down_increase_speed(false);
-        break;
-    }
-  }
-}
-
-void power_down_reverse_control (bool opposite) {
-  if (opposite) {
-    //left -> now right
-    int trigPin1 = 8;
-    int echoPin1 = 7;
-    //right -> now left
-    int trigPin2 = 10;
-    int echoPin2 = 9;
-  } else {
-    //left (normal)
-    int trigPin1 = 10;
-    int echoPin1 = 9;
-    //right (normal)
-    int trigPin2 = 8;
-    int echoPin2 = 7;
-  }
-}
 
 
-void power_down_increase_speed(bool speed_control) {
-  //if speed_control is true, increase speed
-  //if false leave it alone
 
-  //sped_up is global in user_input
-  sped_up = speed_control;
-}
+
+//NatatiasFUNCTION GOES HERE
+
 
 
 /************ END OF POWER DOWN  FUNCTIONS ***********/
@@ -454,15 +439,13 @@ void loop() {
     //Serial.print("Distance: ");
     //Serial.println(distance);
 
-    
+    finishTime = millis(); //might not need here depending on when updateTarget is called. 
+
     get_left_user_input();
     get_right_user_input();
     moveBar();
-    ballEntry(); 
+    ballEntry();
+    updatescore();
 
-      
-  
-
-  } 
-  
+  }
 }
