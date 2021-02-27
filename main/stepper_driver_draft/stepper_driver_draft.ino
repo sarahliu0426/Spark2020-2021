@@ -52,40 +52,12 @@
 
 //EXPERIMENTAL VALUES - will need to adjust as we prototype
 
-//Uncomment me if using stepper.h
-//#define STEPPER_H 1
-
-//Uncomment me if using accelstepper.h
-#define ACCELSTEPPER 1
-
-//Uncomment me if using a driver
-//#define ACCELSTEPPER_WITH_DRIVER
-
-//Uncomment me if NOT using a driver
-#define ACCELSTEPPER_NO_DRIVER
-
-//instead of manually uncommenting blocks, the compiler will check if you've included the single line "#define STEPPER_H"
-//it won't include this code if STEPPER_H is undefined
-#ifdef STEPPER_H
 #define CEILING 0                //highest height of bar
-#define FLOOR 10000              //bottom of the playing area, not actually the floor
+#define FLOOR 10000             //bottom of the playing area, not actually the floor
 #define BALL_RETURN_HEIGHT 11000 //lowest height of bar, where bar will pick up ball
 #define MAX_BAR_TILT 200         //maximum vertical slope of bar, aka barPosRight - barPosLeft
-#define MAX_SPEED 15
+#define MAX_SPEED 10 //10 is the fastest 28byj
 #define STEP_INCR 1 //steps taken on each loop() iteration
-#endif
-
-#ifdef ACCELSTEPPER
-#define CEILING -30000
-#define FLOOR 50000
-#define BALL_RETURN_HEIGHT 51000
-#define MAX_BAR_TILT 100000 //need to test
-#define MAX_SPEED 600
-#define MAX_ACCEL 300
-#define SPEED_MULT 5
-#define STEP_INCR 100
-#endif
-
 #define STEPS_PER_REV 2048 //only for 28byj stepper with ULN2003 driver
 
 //for both stepper.h and accelstepper.h
@@ -105,7 +77,9 @@ int barPosR = FLOOR;
 
 int barTilt = 0;
 
-//WITHOUT DRIVER
+float speedPowerUpMultiplier = 1.0; //adjust this number to increase the bar speed
+
+////only for 28byj stepper with ULN2003 driver
 #define RT_COIL_1A 4
 #define RT_COIL_1B 5
 #define RT_COIL_2A 6
@@ -114,30 +88,8 @@ int barTilt = 0;
 #define LT_COIL_1B 11
 #define LT_COIL_2A 12
 #define LT_COIL_2B 13
-
-//For stepper.h, no driver
-#ifdef STEPPER_H
 Stepper motorR = Stepper(STEPS_PER_REV, RT_COIL_1A, RT_COIL_1B, RT_COIL_2A, RT_COIL_2B);
 Stepper motorL = Stepper(STEPS_PER_REV, LT_COIL_1A, LT_COIL_1B, LT_COIL_2A, LT_COIL_2B);
-#endif
-
-//we will eventually need to use AccelStepper.h functions, since Stepper.h isn't compatiable with motor driver that
-//have a STEP and DIR pin
-
-//for accelstepper.h, no driver
-#ifdef ACCELSTEPPER_NO_DRIVER
-AccelStepper motorR(AccelStepper::FULL4WIRE, RT_COIL_1A, RT_COIL_1B, RT_COIL_2A, RT_COIL_2B);
-AccelStepper motorL(AccelStepper::FULL4WIRE, LT_COIL_1A, LT_COIL_1B, LT_COIL_2A, LT_COIL_2B);
-#endif
-
-#ifdef ACCELSTEPPER_WITH_DRIVER
-#define STEP_R 4
-#define DIR_R 5
-#define STEP_L 6
-#define STEP_L 7
-AccelStepper motorR(AccelStepper::DRIVER, STEP_R, DIR_R);
-AccelStepper motorL(AccelStepper::DRIVER, STEP_L, DIR_L);
-#endif
 
 /***************************************/
 
@@ -167,22 +119,15 @@ int userSpeed = 1;
 void setup()
 {
 
-  //uncomment me if using accelstepper
-  #ifdef ACCELSTEPPER
-  motorR.setMaxSpeed(MAX_SPEED);
-  motorL.setMaxSpeed(MAX_SPEED);
-  motorR.setAcceleration(MAX_SPEED);
-  motorL.setAcceleration(MAX_SPEED);
-  #endif
+  barPosL = FLOOR;
+  barPosR = FLOOR;
   
-  //for both stepper.h and accelstepper.h
-  //Note: speed is in rpm for stepper.h, but it's in steps/sec for accelstepper.h
-  #ifdef STEPPER_H
+  //Note: speed is in rpm for stepper.h
   motorR.setSpeed(MAX_SPEED);
   motorL.setSpeed(MAX_SPEED);
-  #endif
 
-  //FOR PROTOTYPING ONLY
+
+  //LEDS FOR PROTOTYPING ONLY
   pinMode(R_DOWN, INPUT);
   pinMode(R_UP, INPUT);
   pinMode(L_DOWN, INPUT);
@@ -193,9 +138,7 @@ void setup()
   pinMode(L_CEIL, OUTPUT);
   pinMode(R_CEIL, OUTPUT);
   pinMode(MAX_TILT_REACHED, OUTPUT);
-
-  barPosL = FLOOR/2; //TODO: set to FLOOR when finished debugging
-  barPosR = FLOOR/2;
+  Serial.begin(9600);
 
   //resetBar();
 }
@@ -237,23 +180,29 @@ void loop()
 
   //pressing 'swap' button will toggle speed
   //from slow (5rpm), med (10rpm), fast (15rpm), then back to slow
+//  if (digitalRead(SWAP) == LOW && prevSwapReading == HIGH)
+//  {
+//    userSpeed+= 1;
+//    if (userSpeed > 3)
+//    {
+//      userSpeed = 1;
+//    }
+//    motorR.setSpeed(userSpeed * SPEED_MULT); //TODO: if swapControls, swap left and right speed
+//    motorL.setSpeed(userSpeed * SPEED_MULT); //only set the speed if user input changes
+//  }
+
+  //for testing resetBar()
   if (digitalRead(SWAP) == LOW && prevSwapReading == HIGH)
-  {
-    userSpeed++;
-    if (userSpeed > 3)
     {
-      userSpeed = 1;
+      resetBar();
     }
-    motorR.setSpeed(userSpeed * SPEED_MULT); //TODO: if swapControls, swap left and right speed
-    motorL.setSpeed(userSpeed * SPEED_MULT); //only set the speed if user input changes
-  }
 
   prevSwapReading = digitalRead(SWAP);
 
   moveBar();
 }
-//STEPPER.H VERSION
-#ifdef STEPPER_H
+
+
 void moveBar()
 {
   //Move motors one step
@@ -262,23 +211,23 @@ void moveBar()
     if (userInputRight > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
     { //move LEFT side of bar UP
       motorL.step(STEP_INCR);
-      barPosL--;
+      barPosL-= 1;
     }
     else if (userInputRight < 0 && barPosL < FLOOR && barTilt < MAX_BAR_TILT)
     { //move LEFT side of bar DOWN
       motorL.step(-STEP_INCR);
-      barPosL++;
+      barPosL+= 1;
     }
 
     if (userInputLeft > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
     { //move RIGHT side of bar UP
       motorR.step(STEP_INCR);
-      barPosR--;
+      barPosR-= 1;
     }
     else if (userInputLeft < 0 && barPosR < FLOOR && barTilt > -MAX_BAR_TILT)
     { //move RIGHT side of bar DOWN
       motorR.step(-STEP_INCR);
-      barPosR++;
+      barPosR+= 1;
     }
   }
   else //normal controls
@@ -287,23 +236,23 @@ void moveBar()
     if (userInputRight > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
     { //move right side of bar UP
       motorR.step(STEP_INCR);
-      barPosR--;
+      barPosR-= 1;
     }
     else if (userInputRight < 0 && barPosR < FLOOR && barTilt > -MAX_BAR_TILT)
     { //move right side of bar DOWN
       motorR.step(-STEP_INCR);
-      barPosR++;
+      barPosR+= 1;
     }
 
     if (userInputLeft > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
     { //move left side of bar UP
       motorL.step(STEP_INCR);
-      barPosL--;
+      barPosL-= 1;
     }
     else if (userInputLeft < 0 && barPosL < FLOOR && barTilt < MAX_BAR_TILT)
     { //move left side of bar DOWN
       motorL.step(-STEP_INCR);
-      barPosL++;
+      barPosL+= 1;
     }
   }
 
@@ -345,127 +294,50 @@ void moveBar()
     digitalWrite(R_CEIL, LOW);
   }
 }
-#endif //END OF STEPPER.H VERSION
 
-//ACCELSTEPPER.H VERSION
-#ifdef ACCELSTEPPER
-void moveBar()
-{
-  //Move motors one step
-  if (swapControls) //special level: SWAP right and left controls
-  {
-    if (userInputRight > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
-    { //move LEFT side of bar UP
-      motorL.move(STEP_INCR);
-      barPosL--;
-    }
-    else if (userInputRight < 0 && barPosL < FLOOR && barTilt < MAX_BAR_TILT)
-    { //move LEFT side of bar DOWN
-      motorL.move(-STEP_INCR);
-      barPosL++;
-    }
-
-    if (userInputLeft > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
-    { //move RIGHT side of bar UP
-      motorR.move(STEP_INCR);
-      barPosR--;
-    }
-    else if (userInputLeft < 0 && barPosR < FLOOR && barTilt > -MAX_BAR_TILT)
-    { //move RIGHT side of bar DOWN
-      motorR.move(-STEP_INCR);
-      barPosR++;
-    }
-  }
-  else //normal controls
-  {
-
-    if (userInputRight > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
-    { //move right side of bar UP
-      motorR.move(STEP_INCR);
-      barPosR--;
-    }
-    else if (userInputRight < 0 && barPosR < FLOOR && barTilt > -MAX_BAR_TILT)
-    { //move right side of bar DOWN
-      motorR.move(-STEP_INCR);
-      barPosR++;
-    }
-
-    if (userInputLeft > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
-    { //move left side of bar UP
-      motorL.move(STEP_INCR);
-      barPosL--;
-    }
-    else if (userInputLeft < 0 && barPosL < FLOOR && barTilt < MAX_BAR_TILT)
-    { //move left side of bar DOWN
-      motorL.move(-STEP_INCR);
-      barPosL++;
-    }
-  }
-
-  //accelstepper fxn. makes the motor go one step
-  motorR.run();
-  motorL.run();
-
-  barTilt = barPosL - barPosR;
-
-  //turn on LEDs for debugging
-  if (abs(barTilt) == MAX_BAR_TILT)
-  {
-    digitalWrite(MAX_TILT_REACHED, HIGH);
-  }
-  else
-  {
-    digitalWrite(MAX_TILT_REACHED, LOW);
-  }
-
-  switch (barPosL)
-  {
-  case FLOOR:
-    digitalWrite(L_FLOOR, HIGH);
-    break;
-  case CEILING:
-    digitalWrite(L_CEIL, HIGH);
-    break;
-  default:
-    digitalWrite(L_FLOOR, LOW);
-    digitalWrite(L_CEIL, LOW);
-  }
-
-  switch (barPosR)
-  {
-  case FLOOR:
-    digitalWrite(R_FLOOR, HIGH);
-    break;
-  case CEILING:
-    digitalWrite(R_CEIL, HIGH);
-    break;
-  default:
-    digitalWrite(R_FLOOR, LOW);
-    digitalWrite(R_CEIL, LOW);
-  }
-}
-#endif //END OF ACCELSTEPPER VERSION
-
-//only for stepper.h - accelstepper version not implemented yet
-#ifdef STEPPER_H
 void resetBar()
 {
-  while (barPosL < BALL_RETURN_HEIGHT && barPosR < BALL_RETURN_HEIGHT)
+  motorR.setSpeed(MAX_SPEED);
+  motorL.setSpeed(MAX_SPEED);
+
+  //if left side of bar is higher, lower it to the same height as right side
+  while(barPosL < barPosR) {
+    motorL.step(STEP_INCR);
+    barPosL+= 1;
+    
+  }
+
+   //if right side of bar is higher, lower it to the same height as left side
+  while(barPosR < barPosL) {
+    motorR.step(STEP_INCR);
+    barPosR+= 1;
+  }
+
+  //lower both sides of bar to ball return height
+  
+  while (barPosL < BALL_RETURN_HEIGHT)
+  {
+//TODO: when bar sensor triggered, reset barPos to FLOOR
+//depends on how mech mounts the bar sensor. wait for noah to update CAD
+//   if(digitalRead(barSensor) == HIGH) {
+//      barPosL = FLOOR;
+//      barPosR = FLOOR;
+//   }
+
+   motorL.step(STEP_INCR);
+   motorR.step(STEP_INCR); 
+   barPosL+= 1;
+   barPosR+= 1;
+  }
+
+  //resetBall(); //matt has the code for this function?
+
+  //lift bar to start of playing area
+  while (barPosL > FLOOR)
   {
     motorL.step(-STEP_INCR);
     motorR.step(-STEP_INCR);
-    barPosL++;
-    barPosR++;
-  }
-
-  delay(BALL_RETURN_DELAY);
-
-  while (barPosL > FLOOR && barPosR > FLOOR)
-  {
-    motorL.step(STEP_INCR);
-    motorR.step(STEP_INCR);
-    barPosL--;
-    barPosR--;
+    barPosL-= 1;
+    barPosR-= 1;
   }
 }
-#endif
