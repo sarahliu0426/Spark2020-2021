@@ -1,26 +1,10 @@
 /* TO DO
 
-Natalia and Ginny:
-Add all-time high score functionality (Ginny)
-- keep updating high score if player keeps beating it
-- call 7 seg display code
 
-- put regular score function on the 7 segment displays (GINNY)
-- 1 set of 7 segment displays
 
 Write ball return function to release special ball
 
 
-Design "hand sanitizer" function to start/quit game
-- ask mech where they want to put it
-- add a way to "quit" the game
-
-Powerdowns (ALEX AND NATALIA): 
-Choose a new level based on jan 22's mtg mins chart
--Natlia = Bar reversal
-holes 0-4: normal, 5 onwards is random
-
-Write powerdown function to increase speed permanently [done]
 
 Program LEDS for powerdowns
 
@@ -33,9 +17,6 @@ Bar movement mechanism:
 - convert distance sensor distances to appropriate motor rotations
 - prevent bar from hitting the ceiling or floor
 
-Detect if ball fell into hole: Natalia
-- assign pins for each sensor and check sensors for each hole in the function ballEntry()
-
 Select new hole as a target hole: Alex (DONE)
 - discuss option: for first 4 holes, choose easy ones, then choose random holes for the rest of the game
 
@@ -44,25 +25,7 @@ Ball Reset: Matt and Janelle
 - Load ball when bar is at bottom
 - servo motor?
 
-Gameplay: Alex and Ginny
-- make sure functions r being called in the right spot in main loop()
-- determine inputs and outputs for each function
-- fix playingGame bool 
 
-Code to trigger "start the game": Natalia [done]
-- if person waves their hands they start the game
-- choose a part? IR sensor?
-
-Set scores: Ginny (DONE)
-- fine tune scoring
-- function can be adjusted based on target hole difficulty
-
-7 seg displays for scoring: Natalia
-
-Determine who's protyping what and order parts: Alex and Janelle
-
-Done:
-- lights for holes
 
 */
 
