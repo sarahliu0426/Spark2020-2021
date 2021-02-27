@@ -73,7 +73,16 @@ Done:
 const int echoPin = 9;
 const int trigPin = 10;
 #define NUMTARGETS 30
+<<<<<<< HEAD
 #include "SevSeg.h"
+=======
+//these can be changed and we need 
+//two for each IR sensor
+int IRSensor = 2; // connect ir sensor to arduino pin 2
+int LED = 13; // conect Led to arduino pin 13
+
+
+>>>>>>> ea5eb00 (Commiting to pull)
 /************END OF CONSTANTS*********************/
 
 /************GLOBAL VARIABLES**********************/
@@ -326,6 +335,7 @@ int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
                           { 1,1,1,0,0,1,1 }};   // 9
                          
 void updateScore() {
+
     targetDifficulty += 1; // no powerups in the first 4 rounds
 
   if (targetDifficult <= 4 && (50 - (finishTime - startTime)/600) > 0) { 
