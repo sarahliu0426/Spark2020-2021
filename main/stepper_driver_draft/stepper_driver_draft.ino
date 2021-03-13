@@ -46,7 +46,6 @@
 
  ***************************/
 
-#include <AccelStepper.h>
 #include <Stepper.h>
 //#include <MultiStepper.h>
 
@@ -59,8 +58,6 @@
 #define MAX_SPEED 10 //10 is the fastest 28byj
 #define STEP_INCR 1 //steps taken on each loop() iteration
 #define STEPS_PER_REV 2048 //only for 28byj stepper with ULN2003 driver
-
-//for both stepper.h and accelstepper.h
 #define SPEED_MULT 5           //multiply user input value with this number to set desired stepper speed
 #define BALL_RETURN_DELAY 2000 //time to wait until a new ball has rolled onto bar
 //distance sensors code will give the motors a number within the range [-3, 3]
@@ -72,12 +69,13 @@
 
 int userInputLeft; //from distance sensor functions
 int userInputRight;
+int prevSpeedLeft;
+int prevSpeedRight;
 int barPosL = FLOOR;
 int barPosR = FLOOR;
-
 int barTilt = 0;
 
-float speedPowerUpMultiplier = 1.0; //adjust this number to increase the bar speed
+int speedBoost = 1; //increment this number to increase the bar speed
 
 ////only for 28byj stepper with ULN2003 driver
 #define RT_COIL_1A 4
@@ -187,8 +185,8 @@ void loop()
 //    {
 //      userSpeed = 1;
 //    }
-//    motorR.setSpeed(userSpeed * SPEED_MULT); //TODO: if swapControls, swap left and right speed
-//    motorL.setSpeed(userSpeed * SPEED_MULT); //only set the speed if user input changes
+//    motorR.setSpeed(userSpeed * SPEED_MULT + speedBoost); //TODO: if swapControls, swap left and right speed
+//    motorL.setSpeed(userSpeed * SPEED_MULT + speedBoost); //only set the speed if user input changes
 //  }
 
   //for testing resetBar()
@@ -202,36 +200,20 @@ void loop()
   moveBar();
 }
 
+void setBarSpeed() {
+    if(userInputLeft != prevSpeedLeft) {
+      motorL.setSpeed(userSpeed * SPEED_MULT + speedBoost);
+    }
+    if(userInputRight != prevSpeedRight) {
+      motorR.setSpeed(userSpeed * SPEED_MULT + speedBoost);
+    }
+  prevSpeedLeft = userInputLeft;
+  prevSpeedRight = userInputRight;
+}
 
 void moveBar()
 {
-  //Move motors one step
-  if (swapControls) //special level: SWAP right and left controls
-  {
-    if (userInputRight > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
-    { //move LEFT side of bar UP
-      motorL.step(STEP_INCR);
-      barPosL-= 1;
-    }
-    else if (userInputRight < 0 && barPosL < FLOOR && barTilt < MAX_BAR_TILT)
-    { //move LEFT side of bar DOWN
-      motorL.step(-STEP_INCR);
-      barPosL+= 1;
-    }
-
-    if (userInputLeft > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
-    { //move RIGHT side of bar UP
-      motorR.step(STEP_INCR);
-      barPosR-= 1;
-    }
-    else if (userInputLeft < 0 && barPosR < FLOOR && barTilt > -MAX_BAR_TILT)
-    { //move RIGHT side of bar DOWN
-      motorR.step(-STEP_INCR);
-      barPosR+= 1;
-    }
-  }
-  else //normal controls
-  {
+  setBarSpeed();
 
     if (userInputRight > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
     { //move right side of bar UP
@@ -254,7 +236,6 @@ void moveBar()
       motorL.step(-STEP_INCR);
       barPosL+= 1;
     }
-  }
 
   barTilt = barPosL - barPosR;
 
@@ -318,8 +299,9 @@ void resetBar()
   while (barPosL < BALL_RETURN_HEIGHT)
   {
 //TODO: when bar sensor triggered, reset barPos to FLOOR
-//depends on how mech mounts the bar sensor. wait for noah to update CAD
-//   if(digitalRead(barSensor) == HIGH) {
+//depends on how mech mounts the bar sensor
+// in variable declarations, add this line: #define BAR_SENSOR_PIN (insert pin number here)
+//   if(digitalRead(BAR_SENSOR_PIN) == HIGH) {
 //      barPosL = FLOOR;
 //      barPosR = FLOOR;
 //   }

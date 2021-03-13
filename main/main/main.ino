@@ -70,10 +70,42 @@ Done:
 #define SENSORPIN 4
 #define BOTTOMPIN 13
 #define SCOREINCREASE 10
-const int echoPin = 9;
-const int trigPin = 10;
 #define NUMTARGETS 30
 #include "SevSeg.h"
+#include <Stepper.h>
+
+//these can be changed and we need 
+//two for each IR sensor
+
+//START OF PIN DECLARATIONS
+const int echoPin = 9;
+const int trigPin = 10;
+//maybe these got removed last time :0
+int IRSensor = 2; // connect ir sensor to arduino pin 2
+int LED = 13; // conect Led to arduino pin 13
+
+//TODO: Add Matt's motorR and motorL initialization code
+
+#define BAR_SENSOR_PIN 12
+//END OF PIN DECLARATIONS
+
+//experimental stepper positions for bar movement
+#define CEILING 0                //highest height of bar
+#define FLOOR 10000             //bottom of the playing area, not actually the floor
+#define BALL_RETURN_HEIGHT 11000 //lowest height of bar, where bar will pick up ball
+#define MAX_BAR_TILT 200         //maximum vertical slope of bar, aka barPosRight - barPosLeft
+#define MAX_SPEED 10 //in rpm
+#define STEP_INCR 1 //steps taken on each loop() iteration
+#define SPEED_MULT 5           //multiply user input value with this number to set desired stepper speed
+#define BALL_RETURN_DELAY 2000 //time to wait until a new ball has rolled onto bar
+
+//distance sensors code will give the motors a number within the range [-3, 3]
+//-ve speed means "down", +ve speed means "up"
+#define STOP 0
+#define SLOW 1
+#define MED 2
+#define FAST 3
+
 /************END OF CONSTANTS*********************/
 
 /************GLOBAL VARIABLES**********************/
@@ -101,6 +133,16 @@ int startTime = 0; //time when the new hole is assigned
 unsigned long finishTime;  //time when the ball drops into target hole
 
 int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
+
+//global vars for bar movement
+int userSpeedLeft; //from get_left_user_input()
+int userSpeedRight;
+int barPosL = FLOOR;
+int barPosR = FLOOR;
+int barTilt = 0;
+
+int speedBoost = 1; //TODO: increment this number to increase the bar speed
+
 /************END OF GLOBAL VARIABLES**********************/
 
 SevSeg sevseg1;
@@ -223,16 +265,6 @@ int sample_distance() {
 
 /****** END OF USER INPUT FUNCTIONS ****/
 
-void moveBar() {
-  //get user input, ie "move left side down by X amount"
-
-  //control motors to move bar
-  //Need to check position of bar:
-  //If bar is too tilted, don't move it
-  //If bar is at top of game, don't move up anymore
-  //If bar is at bottom of game, don't move down anymore
-
-}
 /************ BALL DETECTION FUNCTIONS *********/
 
 bool beamBroken(int target)
@@ -306,6 +338,103 @@ void ballEntry() {
 }
 
 /************ END OF BALL DETECTION FUNCTIONS ***********/
+
+/*********** START OF BAR MOVEMENT FUNCTIONS *********/
+
+//helper fxn for moveBar()
+//changes the motor speed if user input speed changes
+void setBarSpeed() { 
+  if(userSpeedLeft != prevSpeedLeft) {
+      motorL.setSpeed(userSpeed * SPEED_MULT + speedBoost);
+    }
+  if(userSpeedRight != prevSpeedRight) {
+      motorR.setSpeed(userSpeed * SPEED_MULT + speedBoost);
+    }
+  prevSpeedLeft = userSpeedLeft;
+  prevSpeedRight = userSpeedRight;
+  prevSpeedLeft = userSpeedLeft;
+  prevSpeedRight = userSpeedRight;
+}
+
+//will move right motor and left motor 1 step each time moveBar() is called
+void moveBar()
+{
+  setBarSpeed();
+
+    if (userSpeedRight > 0 && barPosR > CEILING && barTilt < MAX_BAR_TILT)
+    { //move right side of bar UP
+      motorR.step(STEP_INCR);
+      barPosR-= 1;
+    }
+    else if (userSpeedRight < 0 && barPosR < FLOOR && barTilt > -MAX_BAR_TILT)
+    { //move right side of bar DOWN
+      motorR.step(-STEP_INCR);
+      barPosR+= 1;
+    }
+
+    if (userSpeedLeft > 0 && barPosL > CEILING && barTilt > -MAX_BAR_TILT)
+    { //move left side of bar UP
+      motorL.step(STEP_INCR);
+      barPosL-= 1;
+    }
+    else if (userSpeedLeft < 0 && barPosL < FLOOR && barTilt < MAX_BAR_TILT)
+    { //move left side of bar DOWN
+      motorL.step(-STEP_INCR);
+      barPosL+= 1;
+    }
+
+  barTilt = barPosL - barPosR;
+}
+
+//lowers bar to ball return area, calls resetBall(), then lifts bar to start of game area
+//assumes there won't be a ball on the bar when resetBar() is called
+void resetBar()
+{
+  motorR.setSpeed(MAX_SPEED);
+  motorL.setSpeed(MAX_SPEED);
+
+  //if left side of bar is higher, lower it to the same height as right side
+  while(barPosL < barPosR) {
+    motorL.step(STEP_INCR);
+    barPosL+= 1;
+    
+  }
+
+   //if right side of bar is higher, lower it to the same height as left side
+  while(barPosR < barPosL) {
+    motorR.step(STEP_INCR);
+    barPosR+= 1;
+  }
+
+  //lower both sides of bar to ball return height
+  
+  while (barPosL < BALL_RETURN_HEIGHT)
+  {
+  //when bar triggers the bar sensor, reset the bar's position variables  
+  if(digitalRead(BAR_SENSOR_PIN) == HIGH) {
+     barPosL = FLOOR;
+     barPosR = FLOOR;
+  }
+
+   motorL.step(STEP_INCR);
+   motorR.step(STEP_INCR); 
+   barPosL+= 1;
+   barPosR+= 1;
+  }
+
+  //resetBall(); //matt has the code for this function?
+
+  //lift bar to start of playing area
+  while (barPosL > FLOOR)
+  {
+    motorL.step(-STEP_INCR);
+    motorR.step(-STEP_INCR);
+    barPosL-= 1;
+    barPosR-= 1;
+  }
+}
+
+/********** END OF BAR MOVEMENT FUNCTIONS ************/
 
 /************ START OF OUTPUT FUNCTIONS ***********/
 void updateLights(int lastHole, int newHole){
@@ -418,6 +547,12 @@ void setup() {
   sevseg2.refreshDisplay(); 
   sevseg3.setNumber(0);
   sevseg3.refreshDisplay(); 
+
+  //reset bar stepper motors
+  barPosL = FLOOR;
+  barPosR = FLOOR;
+  motorR.setSpeed(MAX_SPEED);
+  motorL.setSpeed(MAX_SPEED);
   
   resetBar();
 }
@@ -474,11 +609,14 @@ void power_down_increase_speed(bool speed_control) {
   //if false leave it alone
 
   //sped_up is global in user_input
-  sped_up = speed_control;
+  sped_up = speed_control; //moveBar() is not using this
+
+  speedBoost++; //increase speed by 1 rpm, used by moveBar()
 }
 
 
 /************ END OF POWER DOWN  FUNCTIONS ***********/
+
 void loop() {
 
   resetGame(); //sets bar, ball, score, lights for initial game start
