@@ -1,10 +1,26 @@
 /* TO DO
 
+Natalia and Ginny:
+Add all-time high score functionality (Ginny)
+- keep updating high score if player keeps beating it
+- call 7 seg display code
 
+- put regular score function on the 7 segment displays (GINNY)
+- 1 set of 7 segment displays
 
 Write ball return function to release special ball
 
 
+Design "hand sanitizer" function to start/quit game
+- ask mech where they want to put it
+- add a way to "quit" the game
+
+Powerdowns (ALEX AND NATALIA): 
+Choose a new level based on jan 22's mtg mins chart
+-Natlia = Bar reversal
+holes 0-4: normal, 5 onwards is random
+
+Write powerdown function to increase speed permanently
 
 Program LEDS for powerdowns
 
@@ -17,6 +33,9 @@ Bar movement mechanism:
 - convert distance sensor distances to appropriate motor rotations
 - prevent bar from hitting the ceiling or floor
 
+Detect if ball fell into hole: Natalia
+- assign pins for each sensor and check sensors for each hole in the function ballEntry()
+
 Select new hole as a target hole: Alex (DONE)
 - discuss option: for first 4 holes, choose easy ones, then choose random holes for the rest of the game
 
@@ -25,7 +44,25 @@ Ball Reset: Matt and Janelle
 - Load ball when bar is at bottom
 - servo motor?
 
+Gameplay: Alex and Ginny
+- make sure functions r being called in the right spot in main loop()
+- determine inputs and outputs for each function
+- fix playingGame bool 
 
+Code to trigger "start the game": Natalia [done]
+- if person waves their hands they start the game
+- choose a part? IR sensor?
+
+Set scores: Ginny (DONE)
+- fine tune scoring
+- function can be adjusted based on target hole difficulty
+
+7 seg displays for scoring: Natalia
+
+Determine who's protyping what and order parts: Alex and Janelle
+
+Done:
+- lights for holes
 
 */
 
@@ -36,16 +73,7 @@ Ball Reset: Matt and Janelle
 const int echoPin = 9;
 const int trigPin = 10;
 #define NUMTARGETS 30
-
 #include "SevSeg.h"
-
-//these can be changed and we need 
-//two for each IR sensor
-
-//maybe these got removed last time :0
-int IRSensor = 2; // connect ir sensor to arduino pin 2
-int LED = 13; // conect Led to arduino pin 13
-
 /************END OF CONSTANTS*********************/
 
 /************GLOBAL VARIABLES**********************/
@@ -62,6 +90,7 @@ bool playingGame = true; //true if someone is playing, false if game over
 int score = 0;
 int targetDifficulty = 0
 int highscore = 0;
+int level = 0;
 
 int targetPin = 0;
 bool targetBroken = false;
@@ -70,7 +99,6 @@ bool bottomBroken = false;
 //global variables for timing 
 int startTime = 0; //time when the new hole is assigned
 unsigned long finishTime;  //time when the ball drops into target hole
-unsigned long waitTime;
 
 int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
 /************END OF GLOBAL VARIABLES**********************/
@@ -78,6 +106,9 @@ int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 
 SevSeg sevseg1;
 SevSeg sevseg2;
 SevSeg sevseg3;
+
+//global variables for power downs
+bool sped_up = false;
 
 void waitToStartGame() {
   //wait and do nothing until someone presses "start"
@@ -98,7 +129,7 @@ void waitToStartGame() {
 }
 
 void updateTarget() {
-  
+  level++; 
   randomSeed(analogRead(0));
 
   int targetIncr = (int)random(0,3);
@@ -128,7 +159,7 @@ void resetBall() {
 }
 
 void resetGame(){
-    
+    level = 0;
     score = 0;
     targetPin = 0;
     targetDifficulty = 0;
@@ -137,16 +168,9 @@ void resetGame(){
     resetBar();
     resetBall();
     finishTime = millis();
-    waitTime = millis();
     updateScore();
     displayScore();
     digitalWrite(targetPin, HIGH);
-}
-
-void standByTime(){
-  // another name?
-  if waitTime/1000 > 5{
-    resetGame();
 }
 
 /****** USER INPUT FUNCTIONS ****/
@@ -173,7 +197,6 @@ int smooth_distance (int num_samples) {
 
 int sample_distance() {
   int current_duration;
-  int current_distance;
   // Clears the trigPin
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -269,7 +292,7 @@ void ballEntry() {
 
     //updateHighScore();
     updateTarget();
-
+    finishTime = millis();
     updateScore();
     displayScore();
     
@@ -306,7 +329,6 @@ int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
                           { 1,1,1,0,0,1,1 }};   // 9
                          
 void updateScore() {
-
     targetDifficulty += 1; // no powerups in the first 4 rounds
 
   if (targetDifficult <= 4 && (50 - (finishTime - startTime)/600) > 0) { 
@@ -377,7 +399,7 @@ void setup() {
   //set up seven seg display x3
   byte numDigits = 1;
   byte digitPins[] = {};
-  byte segmentPins1[] = {6, 5, 2, 3, 4, 7, 8, 9}; // assumed pin numbers
+  byte segmentPins1[] = {6, 5, 2, 3, 4, 7, 8, 9};
   byte segmentPins2[] = {6, 5, 2, 3, 4, 7, 8, 9};
   byte segmentPins3[] = {6, 5, 2, 3, 4, 7, 8, 9};
   bool resistorsOnSegments = true;
@@ -400,12 +422,60 @@ void setup() {
   resetBar();
 }
 /************ START OF POWER DOWN FUNCTIONS ***********/
+void powerdown_handler(){
+  if(level <=5){
+    power_down_reverse_control(false);
+    power_down_increase_speed(false);
+  }else{
+    int powerdown = (int)random(0,2);
+    
+    switch(powerdown){
+      case 0:
+        power_down_reverse_control(true);
+        power_down_increase_speed(false);
+        break;
+      case 1:
+        power_down_reverse_control(false);
+        power_down_increase_speed(true);
+        break;
+      case 2:
+        power_down_reverse_control(true);
+        power_down_increase_speed(true);
+        break;
+      default:
+        power_down_reverse_control(false);
+        power_down_increase_speed(false);
+        break;
+    }
+  }
+}
+
+void power_down_reverse_control (bool opposite) {
+  if (opposite) {
+    //left -> now right
+    int trigPin1 = 8;
+    int echoPin1 = 7;
+    //right -> now left
+    int trigPin2 = 10;
+    int echoPin2 = 9;
+  } else {
+    //left (normal)
+    int trigPin1 = 10;
+    int echoPin1 = 9;
+    //right (normal)
+    int trigPin2 = 8;
+    int echoPin2 = 7;
+  }
+}
 
 
+void power_down_increase_speed(bool speed_control) {
+  //if speed_control is true, increase speed
+  //if false leave it alone
 
-
-//NatatiasFUNCTION GOES HERE
-
+  //sped_up is global in user_input
+  sped_up = speed_control;
+}
 
 
 /************ END OF POWER DOWN  FUNCTIONS ***********/
@@ -420,11 +490,12 @@ void loop() {
     //Serial.print("Distance: ");
     //Serial.println(distance);
 
+    
+    //TODO: Work out where to call start and end times (NOT DONE)
     finishTime = millis(); //might not need here depending on when updateTarget is called. 
 
     get_left_user_input();
     get_right_user_input();
-    waitTime = millis(); //resetting waitTime as interface is still active
     moveBar();
     ballEntry();
     updatescore();
