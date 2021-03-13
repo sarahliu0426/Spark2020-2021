@@ -70,6 +70,7 @@ bool bottomBroken = false;
 //global variables for timing 
 int startTime = 0; //time when the new hole is assigned
 unsigned long finishTime;  //time when the ball drops into target hole
+unsigned long waitTime;
 
 int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
 /************END OF GLOBAL VARIABLES**********************/
@@ -136,9 +137,16 @@ void resetGame(){
     resetBar();
     resetBall();
     finishTime = millis();
+    waitTime = millis();
     updateScore();
     displayScore();
     digitalWrite(targetPin, HIGH);
+}
+
+void standByTime(){
+  // another name?
+  if waitTime/1000 > 5{
+    resetGame();
 }
 
 /****** USER INPUT FUNCTIONS ****/
@@ -369,7 +377,7 @@ void setup() {
   //set up seven seg display x3
   byte numDigits = 1;
   byte digitPins[] = {};
-  byte segmentPins1[] = {6, 5, 2, 3, 4, 7, 8, 9};
+  byte segmentPins1[] = {6, 5, 2, 3, 4, 7, 8, 9}; // assumed pin numbers
   byte segmentPins2[] = {6, 5, 2, 3, 4, 7, 8, 9};
   byte segmentPins3[] = {6, 5, 2, 3, 4, 7, 8, 9};
   bool resistorsOnSegments = true;
@@ -416,6 +424,7 @@ void loop() {
 
     get_left_user_input();
     get_right_user_input();
+    waitTime = millis(); //resetting waitTime as interface is still active
     moveBar();
     ballEntry();
     updatescore();
