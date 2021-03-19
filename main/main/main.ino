@@ -7,7 +7,6 @@
 #define BOTTOMPIN 13
 #define SCOREINCREASE 10
 #define NUMTARGETS 30
-#include "SevSeg.h"
 #include <Stepper.h>
 
 //these can be changed and we need 
