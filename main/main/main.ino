@@ -6,7 +6,7 @@
 #define SENSORPIN 4
 #define BOTTOMPIN 13
 #define SCOREINCREASE 10
-#define NUMTARGETS 30
+#define NUMTARGETS 35
 #include <Stepper.h>
 
 //these can be changed and we need 
