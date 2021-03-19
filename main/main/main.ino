@@ -65,8 +65,8 @@ bool targetBroken = false;
 bool bottomBroken = false;
 
 //global variables for timing 
-int startTime = 0; //time when the new hole is assigned
-unsigned long finishTime;  //time when the ball drops into target hole
+unsigned long finishTime;  //time when the ball drops into target hole, resets each round
+unsigned long globaTime;
 
 int targetHoles[NUMTARGETS]; //sequential pin numbers of target holes, eg 0, 1, 2, 3...
 
@@ -147,7 +147,6 @@ void resetBall() {
     myStepper.step(stepsFor30Degrees*-1); //rotate in opposite direction
   
   Serial.println("reset ball");
-  startTime = finishTime
 }
 
 void resetGame(){
@@ -160,9 +159,15 @@ void resetGame(){
     resetBar();
     resetBall();
     finishTime = millis();
+    globalTIme = millis();
     updateScore();
     displayScore();
     digitalWrite(targetPin, HIGH);
+}
+
+void idleTime(){
+  if (globalTime/1000 > 5){ // 5 minutes of idle
+    playingGame = false;
 }
 
 /****** USER INPUT FUNCTIONS ****/
@@ -404,13 +409,13 @@ int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
 void updateScore() {
     targetDifficulty += 1; // no powerups in the first 4 rounds
 
-  if (targetDifficult <= 4 && (50 - (finishTime - startTime)/600) > 0) { 
-    score += int(50 - (finishTime - startTime)/600); 
+  if (targetDifficult <= 4 && (50 - finishTime/600) > 0) { 
+    score += int(50 - finishTime/600); 
     // user gets 0 if they spend more than 30 secs 
 
   }
   else {
-    score += int(50 - (finishTime - startTime)/2400); 
+    score += int(50 - finishTime/2400); 
     // user gets 0 if they spend more than 120 secs 
   }
   delay(1000);
@@ -575,12 +580,13 @@ void loop() {
     
     //TODO: Work out where to call start and end times (NOT DONE)
     finishTime = millis(); //might not need here depending on when updateTarget is called. 
-
+  
     get_left_user_input();
     get_right_user_input();
     moveBar();
     ballEntry();
     updatescore();
+    idleTime();
 
   }
 }
