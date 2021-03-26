@@ -45,7 +45,6 @@ int LED = 13; // conect Led to arduino pin 13
 /************END OF CONSTANTS*********************/
 
 /************GLOBAL VARIABLES**********************/
-//declare any variables here that need to be remembered throughout the entire game
 
 // time for sound wave to travel to object and bounce back
 long duration;
@@ -80,14 +79,16 @@ int barTilt = 0;
 
 int speedBoost = 1; //TODO: increment this number to increase the bar speed
 
-/************END OF GLOBAL VARIABLES**********************/
-
 SevSeg sevseg1;
 SevSeg sevseg2;
 SevSeg sevseg3;
 
 //global variables for power downs
 bool sped_up = false;
+
+/************END OF GLOBAL VARIABLES**********************/
+
+
 
 void waitToStartGame() {
   //wait and do nothing until someone presses "start"
@@ -111,7 +112,7 @@ void updateTarget() {
   level++; 
   randomSeed(analogRead(0));
 
-  int targetIncr = (int)random(0,3);
+  int targetIncr = (int)random(1,3);
 
   int oldTarget = targetPin;
   
@@ -499,7 +500,7 @@ void setup() {
 }
 /************ START OF POWER DOWN FUNCTIONS ***********/
 void powerdown_handler(){
-  if(level <=5){
+  if(level <=7){
     power_down_reverse_control(false);
     power_down_increase_speed(false);
   }else{
