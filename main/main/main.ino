@@ -1,3 +1,4 @@
+#include "RunningAverage.h"
 /* 
   IR Breakbeam sensor demo!
 */
@@ -51,11 +52,12 @@ long duration;
 // distance between sensor and object
 int distance;
 
+RunningAverage holes[39];
 
 bool playingGame = true; //true if someone is playing, false if game over
 
 int score = 0;
-int targetDifficulty = 0
+int targetDifficulty = 0;
 int highscore = 0;
 int level = 0;
 
@@ -230,7 +232,21 @@ bool beamBroken(int target)
   // variables will change: // 1 = unbroked, 0 = broke 
   int sensorState;
   sensorState = digitalRead(SENSORPIN);
- 
+
+  //note that the array index may need to be changed
+  //depending on the actual value of the sensorpin
+  //this implementation assumes all IRs are using contiguous
+  //pins starting at 0
+  //so will probably need an offset (if pins start at 4 for example)
+  
+  holes[SENSORPIN].addValue(!beamBroken*5);
+  //fiddle with the number 5 s.t. when beam is broken
+  //it affects the average more
+
+  //maybe change value from 1 to 0 or something else
+  if (holes[SENSORPIN].getAverage() > 1) {
+    return 1;
+  }
   return !beamBroken; //this way 1 = broken and 0 = unbroken
 }
 
