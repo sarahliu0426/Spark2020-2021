@@ -1,4 +1,4 @@
-#include "RunningAverage.h"
+
 /* 
   IR Breakbeam sensor demo!
 */
@@ -9,7 +9,8 @@
 #define SCOREINCREASE 10
 #define NUMTARGETS 35
 #include <Stepper.h>
-
+#include "RunningAverage.h"
+#include "SevSeg.h"
 //these can be changed and we need 
 //two for each IR sensor
 
@@ -96,7 +97,7 @@ void waitToStartGame() {
 
   //player places hand over one of the sensors to start
   //has to be high above sensor
-  if (get_left_user_input() == 1 || !get_right_user_input() == 1) {
+  if (get_left_user_input() == 1 || get_right_user_input() == 1) {
     //start the game
     playingGame = true;
     resetGame();
