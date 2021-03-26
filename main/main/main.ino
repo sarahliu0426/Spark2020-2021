@@ -96,7 +96,7 @@ void waitToStartGame() {
 
   //player places hand over one of the sensors to start
   //has to be high above sensor
-  if (get_left_user_input == 1 || !get_right_user_input == 1) {
+  if (get_left_user_input() == 1 || !get_right_user_input() == 1) {
     //start the game
     playingGame = true;
     resetGame();
