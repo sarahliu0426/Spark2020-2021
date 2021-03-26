@@ -52,7 +52,7 @@ long duration;
 // distance between sensor and object
 int distance;
 
-RunningAverage holes[39];
+RunningAverage holes[35];
 
 bool playingGame = true; //true if someone is playing, false if game over
 
