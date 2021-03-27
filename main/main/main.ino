@@ -1,3 +1,4 @@
+
 /* 
   IR Breakbeam sensor demo!
 */
@@ -8,8 +9,13 @@
 #define SCOREINCREASE 10
 #define NUMTARGETS 35
 #include <Stepper.h>
+<<<<<<< HEAD
 #include "SevSeg.h"
 
+=======
+#include "RunningAverage.h"
+#include "SevSeg.h"
+>>>>>>> cbae9a18f2eaafa639cf367a6fa5271cff053b92
 //these can be changed and we need 
 //two for each IR sensor
 
@@ -45,18 +51,18 @@ int LED = 13; // conect Led to arduino pin 13
 /************END OF CONSTANTS*********************/
 
 /************GLOBAL VARIABLES**********************/
-//declare any variables here that need to be remembered throughout the entire game
 
 // time for sound wave to travel to object and bounce back
 long duration;
 // distance between sensor and object
 int distance;
 
+RunningAverage holes[35];
 
 bool playingGame = true; //true if someone is playing, false if game over
 
 int score = 0;
-int targetDifficulty = 0
+int targetDifficulty = 0;
 int highscore = 0;
 int level = 0;
 
@@ -79,8 +85,6 @@ int barTilt = 0;
 
 int speedBoost = 1; //TODO: increment this number to increase the bar speed
 
-/************END OF GLOBAL VARIABLES**********************/
-
 SevSeg sevseg1;
 SevSeg sevseg2;
 SevSeg sevseg3;
@@ -88,13 +92,21 @@ SevSeg sevseg3;
 //global variables for power downs
 bool sped_up = false;
 
+/************END OF GLOBAL VARIABLES**********************/
+
+
+
 void waitToStartGame() {
   //wait and do nothing until someone presses "start"
   //then continue with game loop
 
   //player places hand over one of the sensors to start
   //has to be high above sensor
+<<<<<<< HEAD
   if (start_game_input() == 1) {
+=======
+  if (get_left_user_input() == 1 || get_right_user_input() == 1) {
+>>>>>>> cbae9a18f2eaafa639cf367a6fa5271cff053b92
     //start the game
     playingGame = true;
     resetGame();
@@ -105,11 +117,15 @@ void waitToStartGame() {
 
 }
 
+
+
+
+
 void updateTarget() {
   level++; 
   randomSeed(analogRead(0));
 
-  int targetIncr = (int)random(0,3);
+  int targetIncr = (int)random(1,3);
 
   int oldTarget = targetPin;
   
@@ -230,7 +246,21 @@ bool beamBroken(int target)
   // variables will change: // 1 = unbroked, 0 = broke 
   int sensorState;
   sensorState = digitalRead(SENSORPIN);
- 
+
+  //note that the array index may need to be changed
+  //depending on the actual value of the sensorpin
+  //this implementation assumes all IRs are using contiguous
+  //pins starting at 0
+  //so will probably need an offset (if pins start at 4 for example)
+  
+  holes[SENSORPIN].addValue(!beamBroken*5);
+  //fiddle with the number 5 s.t. when beam is broken
+  //it affects the average more
+
+  //maybe change value from 1 to 0 or something else
+  if (holes[SENSORPIN].getAverage() > 1) {
+    return 1;
+  }
   return !beamBroken; //this way 1 = broken and 0 = unbroken
 }
 
@@ -486,7 +516,7 @@ void setup() {
 }
 /************ START OF POWER DOWN FUNCTIONS ***********/
 void powerdown_handler(){
-  if(level <=5){
+  if(level <=7){
     power_down_reverse_control(false);
     power_down_increase_speed(false);
   }else{
