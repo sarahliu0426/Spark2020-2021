@@ -8,6 +8,7 @@
 #define SCOREINCREASE 10
 #define NUMTARGETS 35
 #include <Stepper.h>
+#include "SevSeg.h"
 
 //these can be changed and we need 
 //two for each IR sensor
@@ -91,10 +92,9 @@ void waitToStartGame() {
   //wait and do nothing until someone presses "start"
   //then continue with game loop
 
-
   //player places hand over one of the sensors to start
   //has to be high above sensor
-  if (get_left_user_input == 1 || !get_right_user_input == 1) {
+  if (start_game_input() == 1) {
     //start the game
     playingGame = true;
     resetGame();
@@ -385,7 +385,10 @@ int num_array[10][7] = {  { 1,1,1,1,1,1,0 },    // 0
 void updateScore() {
     targetDifficulty += 1; // no powerups in the first 4 rounds
 
-  if (targetDifficult <= 4 && (50 - finishTime/600) > 0) { 
+  level = targetDifficulty/4;
+  
+  
+  if (targetDifficulty <= 4 && (50 - finishTime/600) > 0) { 
     score += int(50 - finishTime/600); 
     // user gets 0 if they spend more than 30 secs 
 
