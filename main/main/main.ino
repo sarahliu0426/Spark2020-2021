@@ -109,6 +109,10 @@ void waitToStartGame() {
 
 }
 
+
+
+
+
 void updateTarget() {
   level++; 
   randomSeed(analogRead(0));
