@@ -31,7 +31,7 @@ float sample_distance_right() {
   digitalWrite(trigPin2, LOW);
   
   // Reads the echoPin, returns the sound wave travel time in microseconds
-  //wait max 50,000 microseconds before readingt
+  //wait max 50,000 microseconds before reading
   //may have to change this value
 
   //we can also switch the pin given in these functions to switch which side 
@@ -84,7 +84,7 @@ float start_game_distance() {
 }
 
 int get_left_user_input(){
-  left_sensor.addValue(start_game_distance());
+  left_sensor.addValue(sample_distance_left());
   //Serial.print("Left Distance: ");
   //Serial.println(left_sensor.getAverage());
   //Serial.print("\n");
