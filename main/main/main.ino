@@ -9,26 +9,30 @@
 #define SCOREINCREASE 10
 #define NUMTARGETS 35
 #include <Stepper.h>
-<<<<<<< HEAD
-#include "SevSeg.h"
-
-=======
 #include "RunningAverage.h"
 #include "SevSeg.h"
->>>>>>> cbae9a18f2eaafa639cf367a6fa5271cff053b92
+#include "Wire.h"
 //these can be changed and we need 
 //two for each IR sensor
 
 //START OF PIN DECLARATIONS
 const int echoPin = 9;
 const int trigPin = 10;
-//maybe these got removed last time :0
 int IRSensor = 2; // connect ir sensor to arduino pin 2
 int LED = 13; // conect Led to arduino pin 13
 
-//TODO: Add Matt's motorR and motorL initialization code
-
 #define BAR_SENSOR_PIN 12
+#define MOTOR_R_STEP 14
+#define MOTOR_R_DIR  15
+#define MOTOR_L_STEP 16
+#define MOTOR_L_DIR  17
+Stepper motorR = Stepper(MOTOR_R_STEP, MOTOR_R_DIR);
+Stepper motorL = Stepper(MOTOR_L_STEP, MOTOR_L_DIR);
+
+//gpio pins. MUST USE SPECIAL PINS 20 and 21
+#define SERIAL_DATA_LINE 20
+#define SERIAL_CLOCK_LINE 21
+
 //END OF PIN DECLARATIONS
 
 //experimental stepper positions for bar movement
@@ -102,11 +106,7 @@ void waitToStartGame() {
 
   //player places hand over one of the sensors to start
   //has to be high above sensor
-<<<<<<< HEAD
-  if (start_game_input() == 1) {
-=======
   if (get_left_user_input() == 1 || get_right_user_input() == 1) {
->>>>>>> cbae9a18f2eaafa639cf367a6fa5271cff053b92
     //start the game
     playingGame = true;
     resetGame();
@@ -136,12 +136,6 @@ void updateTarget() {
   }
   
   updateLights(oldTarget, targetPin);
-}
-
-void resetBar() {
-  //given current position of bar, reset the bar
-  //put the ball back onto the bar
-  Serial.println("reset bar");
 }
 
 void resetBall() {
@@ -479,10 +473,6 @@ void setup() {
 
   //fill targetHoles array with pin numbers
 
-  //initialize motors
-  //initialize user input devices
-  //initialize displays
-
   //set up seven seg display x3
   byte numDigits = 1;
   byte digitPins[] = {};
@@ -511,6 +501,30 @@ void setup() {
   barPosR = FLOOR;
   motorR.setSpeed(MAX_SPEED);
   motorL.setSpeed(MAX_SPEED);
+
+  //set up two gpio expanders
+  //chip 1 address: 0x20
+  //chip 2 address: 0x27
+ Wire.begin(); //wake up I2C bus
+  // set I/O pins for chip 0x20 to outputs
+ Wire.beginTransmission(0x20);
+ Wire.write(0x00); // IODIRA register
+ Wire.write(0x00); // set all of port A to outputs
+ Wire.endTransmission();
+ Wire.beginTransmission(0x20);
+ Wire.write(0x01); // IODIRB register
+ Wire.write(0x00); // set all of port B to outputs
+ Wire.endTransmission();
+
+ // set I/O pins for chip 0x27 to outputs
+ Wire.beginTransmission(0x27);
+ Wire.write(0x00); // IODIRA register
+ Wire.write(0x00); // set all of port A to outputs
+ Wire.endTransmission();
+ Wire.beginTransmission(0x27);
+ Wire.write(0x01); // IODIRB register
+ Wire.write(0x00); // set all of port B to outputs
+ Wire.endTransmission();
   
   resetBar();
 }
