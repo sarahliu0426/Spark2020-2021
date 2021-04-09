@@ -8,6 +8,7 @@
 #define BOTTOMPIN 13
 #define SCOREINCREASE 10
 #define NUMTARGETS 35
+#define IROFFSET 25
 #include <Stepper.h>
 #include "RunningAverage.h"
 #include "SevSeg.h"
@@ -16,8 +17,6 @@
 //two for each IR sensor
 
 //START OF PIN DECLARATIONS
-const int echoPin = 9;
-const int trigPin = 10;
 int IRSensor = 2; // connect ir sensor to arduino pin 2
 int LED = 13; // conect Led to arduino pin 13
 
@@ -26,6 +25,11 @@ int LED = 13; // conect Led to arduino pin 13
 #define MOTOR_R_DIR  15
 #define MOTOR_L_STEP 16
 #define MOTOR_L_DIR  17
+<<<<<<< HEAD
+=======
+#define RESET_MOTOR_STEP 0
+#define RESET_MOTOR_DIR 1
+>>>>>>> 5721f1e68c5e8bd289c98e7b558f98acbd8c9a65
 Stepper motorR = Stepper(MOTOR_R_STEP, MOTOR_R_DIR);
 Stepper motorL = Stepper(MOTOR_L_STEP, MOTOR_L_DIR);
 
@@ -476,12 +480,13 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600); // Starts the serial communication
 
-  for (int i = 0; i < NUMTARGETS; i++) {
+  for (int i = IROFFSET; i < NUMTARGETS+IROFFSET; i++) {
     pinMode(i, INPUT); //IR receivers, one pin per target hole
     digitalWrite(i, HIGH); // turn on the pullup
     targetHoles[i] = i;
   }
 
+  //what is this?
   pinMode(8, OUTPUT);
 
   pinMode(echoPin, INPUT); //echoPin, for distance sensor
