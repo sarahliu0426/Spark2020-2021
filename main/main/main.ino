@@ -418,20 +418,10 @@ int gpio_num_array[10] = {  B01111110,    // 0
                             B01110011 };   // 9
                          
 void updateScore() {
-    targetDifficulty += 1; // no powerups in the first 4 rounds
-
-  level = targetDifficulty/4;
+  targetDifficulty += 1;
+    
+  score += finishtime/1500 * targetDifficulty/5;
   
-  
-  if (targetDifficulty <= 4 && (50 - finishTime/600) > 0) { 
-    score += int(50 - finishTime/600); 
-    // user gets 0 if they spend more than 30 secs 
-
-  }
-  else {
-    score += int(50 - finishTime/2400); 
-    // user gets 0 if they spend more than 120 secs 
-  }
   delay(1000);
   displayScore();
   sethighScore();
