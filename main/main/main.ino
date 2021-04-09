@@ -26,8 +26,11 @@ int LED = 13; // conect Led to arduino pin 13
 #define MOTOR_R_DIR  15
 #define MOTOR_L_STEP 16
 #define MOTOR_L_DIR  17
+#define RESET_MOTOR_STEP 7
+#define RESET_MOTOR_DIR 8
 Stepper motorR = Stepper(MOTOR_R_STEP, MOTOR_R_DIR);
 Stepper motorL = Stepper(MOTOR_L_STEP, MOTOR_L_DIR);
+Stepper ResetStepper(stepsPerRevolution,RESET_MOTOR_STEP,RESET_MOTOR_DIR);
 
 //gpio pins. MUST USE SPECIAL PINS 20 and 21
 #define SERIAL_DATA_LINE 20
