@@ -26,11 +26,8 @@ int LED = 13; // conect Led to arduino pin 13
 #define MOTOR_R_DIR  15
 #define MOTOR_L_STEP 16
 #define MOTOR_L_DIR  17
-#define RESET_MOTOR_STEP 7
-#define RESET_MOTOR_DIR 8
 Stepper motorR = Stepper(MOTOR_R_STEP, MOTOR_R_DIR);
 Stepper motorL = Stepper(MOTOR_L_STEP, MOTOR_L_DIR);
-Stepper ResetStepper(stepsPerRevolution,RESET_MOTOR_STEP,RESET_MOTOR_DIR);
 
 //gpio pins. MUST USE SPECIAL PINS 20 and 21
 #define SERIAL_DATA_LINE 20
@@ -444,6 +441,25 @@ void displayScore() {
   
   
   //update digits on the seven seg display 
+
+
+  Wire.beginTransmission(0x20); //select chip 0x20
+  Wire.write(0x12); // Select Port A
+  Wire.write(gpio_num_array[thirdDigit]); // Send data
+  Wire.endTransmission();
+  Wire.beginTransmission(0x20); //select chip 0x20
+  Wire.write(0x13); // Select Port B
+  Wire.write(gpio_num_array[highFirst]); // Send data
+  Wire.endTransmission();
+  Wire.beginTransmission(0x27); //select chip 0x27
+  Wire.write(0x12); // Select Port A
+  Wire.write(gpio_num_array[highSecond]); // Send data
+  Wire.endTransmission();
+  Wire.beginTransmission(0x27); //select chip 0x27
+  Wire.write(0x13); // Select Port B
+  Wire.write(gpio_num_array[highThrid]); // Send data
+  Wire.endTransmission();
+
 }
 
 void sethighScore() {
@@ -485,7 +501,7 @@ void setup() {
   byte segmentPins3[] = {6, 5, 2, 3, 4, 7, 8, 9};
   bool resistorsOnSegments = true;
 
-  byte hardwareConfig = COMMON_CATHODE; 
+  byte hardwareConfig = COMMON_ANODE; 
   sevseg1.begin(hardwareConfig, numDigits, digitPins, segmentPins1, resistorsOnSegments);
   sevseg1.setBrightness(90);
   sevseg2.begin(hardwareConfig, numDigits, digitPins, segmentPins2, resistorsOnSegments);
