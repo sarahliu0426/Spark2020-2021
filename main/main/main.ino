@@ -25,11 +25,8 @@ int LED = 13; // conect Led to arduino pin 13
 #define MOTOR_R_DIR  15
 #define MOTOR_L_STEP 16
 #define MOTOR_L_DIR  17
-<<<<<<< HEAD
-=======
 #define RESET_MOTOR_STEP 0
 #define RESET_MOTOR_DIR 1
->>>>>>> 5721f1e68c5e8bd289c98e7b558f98acbd8c9a65
 Stepper motorR = Stepper(MOTOR_R_STEP, MOTOR_R_DIR);
 Stepper motorL = Stepper(MOTOR_L_STEP, MOTOR_L_DIR);
 
